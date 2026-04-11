@@ -262,7 +262,7 @@ export default function ProfileScreen() {
 
           {/* Top row */}
           <View style={styles.heroTopRow}>
-            <Text style={styles.heroLogo}>UniteOman</Text>
+            <Text style={styles.heroLogo}>UniteOman </Text>
             <TouchableOpacity style={styles.notifBtn}>
               <Ionicons name="notifications-outline" size={20} color="rgba(255,255,255,0.9)" />
             </TouchableOpacity>

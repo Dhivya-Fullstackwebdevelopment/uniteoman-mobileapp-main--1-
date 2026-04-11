@@ -1,5 +1,12 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Image, Dimensions } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  Dimensions,
+} from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
@@ -7,8 +14,10 @@ import { BusinessCard as BusinessCardType } from '../types';
 import { Colors, Gradients } from '../constants/Colors';
 import { API_BASE_URL } from '../constants/api';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width * 0.66;
+const { width: SCREEN_WIDTH } = Dimensions.get('window');
+
+// Full-width card (matches uploaded image style)
+const CARD_WIDTH = SCREEN_WIDTH - 32; // 16px margin each side
 
 export function buildImageUrl(url?: string): string | undefined {
   if (!url) return undefined;
@@ -29,97 +38,130 @@ interface ShelfCardProps {
   business: BusinessCardType;
   badge?: string;
   index?: number;
+  /** @deprecated – all cards are now full-width; kept for backwards compat */
+  fullWidth?: boolean;
 }
 
-export default function ShelfCard({ business, badge, index = 0 }: ShelfCardProps) {
+export default function ShelfCard({
+  business,
+  badge,
+  index = 0,
+}: ShelfCardProps) {
   const C = Colors;
   const fallbackImg = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
-  const coverUri = buildImageUrl(business.cover_image_url || business.logo_url) || fallbackImg;
+  const coverUri =
+    buildImageUrl(business.cover_image_url || business.logo_url) || fallbackImg;
+
+  // Mock "was" price for deals – replace with real field if available
+  const hasDiscount = business.has_deal;
+  const currentPrice = business.price ?? null;
+  const wasPrice = hasDiscount && currentPrice ? Math.round(currentPrice * 1.25) : null;
+
+  const isVerified = business.is_verified ?? false;
 
   return (
     <TouchableOpacity
       style={styles.card}
       onPress={() => router.push(`/business/${business.slug}`)}
-      activeOpacity={0.92}
+      activeOpacity={0.93}
     >
-      {/* Image container */}
-      <View style={styles.imageContainer}>
-        {coverUri ? (
-          <Image source={{ uri: coverUri }} style={styles.image} resizeMode="cover" />
-        ) : (
-          <View style={[styles.image, styles.imagePlaceholder]}>
-            <LinearGradient colors={Gradients.primary} style={StyleSheet.absoluteFill} />
-            <Ionicons name="business" size={36} color="rgba(255,255,255,0.7)" />
-          </View>
-        )}
+      {/* ── Image ───────────────────────────────────────────── */}
+      <View style={styles.imageWrap}>
+        <Image source={{ uri: coverUri }} style={styles.image} resizeMode="cover" />
 
-        {/* Subtle gradient for text readability */}
+        {/* Subtle bottom fade */}
         <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.55)']}
-          style={styles.imageGradient}
+          colors={['transparent', 'rgba(0,0,0,0.18)']}
+          style={styles.imageFade}
           pointerEvents="none"
         />
 
-        {/* Badges top-left */}
-        <View style={styles.headerBadges}>
-          {badge && (
+        {/* Top-left badges */}
+        <View style={styles.topLeft}>
+          {isVerified && (
+            <View style={styles.verifiedBadge}>
+              <Ionicons name="checkmark-circle" size={11} color="#FFF" />
+              <Text style={styles.verifiedText}>Verified</Text>
+            </View>
+          )}
+          {badge && !isVerified && (
             <View
               style={[
-                styles.badge,
-                {
-                  backgroundColor:
-                    badge === 'New' ? C.success : C.primary,
-                },
+                styles.genericBadge,
+                { backgroundColor: badge === 'New' ? C.success : C.primary },
               ]}
             >
               {badge === 'New' && (
                 <Ionicons name="sparkles" size={9} color="#FFF" />
               )}
-              <Text style={styles.badgeText}>{badge.toUpperCase()}</Text>
+              <Text style={styles.verifiedText}>{badge.toUpperCase()}</Text>
             </View>
           )}
-          {business.has_deal && (
-            <View style={[styles.badge, { backgroundColor: C.error }]}>
+          {hasDiscount && (
+            <View style={[styles.genericBadge, { backgroundColor: C.error }]}>
               <Ionicons name="pricetag" size={9} color="#FFF" />
-              <Text style={styles.badgeText}>DEAL</Text>
+              <Text style={styles.verifiedText}>DEAL</Text>
             </View>
           )}
         </View>
 
-        {/* Rating badge top-right */}
-        <View style={styles.ratingBadge}>
-          <Ionicons name="star" size={10} color="#FFF" />
-          <Text style={styles.ratingText}>{Number(business.rating_avg).toFixed(1)}</Text>
-        </View>
-
-        {/* Favorite button */}
+        {/* Favourite button – top-right */}
         <TouchableOpacity style={styles.favBtn} activeOpacity={0.8}>
-          <Ionicons name="heart-outline" size={16} color="#FFF" />
+          <Ionicons name="heart-outline" size={18} color="#FFF" />
         </TouchableOpacity>
       </View>
 
-      {/* Info */}
+      {/* ── Info ────────────────────────────────────────────── */}
       <View style={styles.info}>
+        {/* Row 1 – name */}
         <Text style={[styles.name, { color: C.text }]} numberOfLines={1}>
           {business.name_en}
         </Text>
-        <Text style={[styles.desc, { color: C.textSecondary }]} numberOfLines={1}>
-          {business.short_description || business.category?.name_en || 'Service Provider'}
-        </Text>
 
-        <View style={styles.footer}>
-          <View style={styles.locationRow}>
-            <View style={[styles.locationDot, { backgroundColor: C.primary }]} />
-            <Text style={[styles.location, { color: C.textMuted }]} numberOfLines={1}>
-              {business.governorate?.name_en || 'Oman'}
+        {/* Row 2 – price */}
+        {currentPrice !== null ? (
+          <View style={styles.priceRow}>
+            <Text style={[styles.price, { color: C.text }]}>
+              {business.currency ?? 'OMR'} {currentPrice}
             </Text>
-          </View>
-          {business.rating_count > 0 && (
-            <View style={styles.reviewsChip}>
-              <Text style={[styles.reviews, { color: C.primary }]}>
-                {business.rating_count} reviews
+            {wasPrice && (
+              <Text style={[styles.wasPrice, { color: C.textMuted }]}>
+                was {wasPrice}
               </Text>
-            </View>
+            )}
+          </View>
+        ) : (
+          <Text style={[styles.desc, { color: C.textSecondary }]} numberOfLines={1}>
+            {business.short_description ||
+              business.category?.name_en ||
+              'Service Provider'}
+          </Text>
+        )}
+
+        {/* Row 3 – rating · reviews · location */}
+        <View style={styles.metaRow}>
+          <Ionicons name="star" size={13} color={C.accent} />
+          <Text style={[styles.ratingVal, { color: C.text }]}>
+            {Number(business.rating_avg).toFixed(1)}
+          </Text>
+
+          {business.rating_count > 0 && (
+            <>
+              <Text style={[styles.dot, { color: C.textMuted }]}>·</Text>
+              <Text style={[styles.reviewCount, { color: C.textMuted }]}>
+                {business.rating_count}
+              </Text>
+            </>
+          )}
+
+          {business.governorate?.name_en && (
+            <>
+              <Text style={[styles.dot, { color: C.textMuted }]}>·</Text>
+              <Ionicons name="location-outline" size={12} color={C.textMuted} />
+              <Text style={[styles.location, { color: C.textMuted }]} numberOfLines={1}>
+                {business.governorate.name_en}
+              </Text>
+            </>
           )}
         </View>
       </View>
@@ -130,139 +172,134 @@ export default function ShelfCard({ business, badge, index = 0 }: ShelfCardProps
 const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
+    alignSelf: 'center',
     backgroundColor: '#FFF',
-    borderRadius: 20,
+    borderRadius: 18,
     overflow: 'hidden',
+    marginBottom: 16,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.09,
     shadowRadius: 14,
-    elevation: 6,
-    marginVertical: 4,
+    elevation: 5,
   },
-  imageContainer: {
-    height: 155,
+
+  // Image
+  imageWrap: {
     width: '100%',
+    height: 210,
     position: 'relative',
+    backgroundColor: '#E2E8F0',
   },
   image: {
     width: '100%',
     height: '100%',
   },
-  imagePlaceholder: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  imageGradient: {
+  imageFade: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
-    height: '60%',
+    height: 60,
   },
 
   // Badges
-  headerBadges: {
+  topLeft: {
     position: 'absolute',
-    top: 10,
-    left: 10,
+    top: 12,
+    left: 12,
+    flexDirection: 'row',
+    gap: 6,
+    alignItems: 'center',
+  },
+  verifiedBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
+    gap: 4,
+    backgroundColor: '#EF4444',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
   },
-  badge: {
+  genericBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 3,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-    borderRadius: 8,
+    gap: 4,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 20,
   },
-  badgeText: {
+  verifiedText: {
     color: '#FFF',
-    fontSize: 9,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  ratingBadge: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: Colors.accent,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-    borderRadius: 8,
-    gap: 3,
-    shadowColor: Colors.accent,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.35,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  ratingText: {
-    color: '#FFF',
-    fontSize: 10,
-    fontWeight: '800',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.2,
   },
   favBtn: {
     position: 'absolute',
-    bottom: 10,
-    right: 10,
-    width: 28,
-    height: 28,
-    borderRadius: 9,
+    top: 12,
+    right: 12,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: 'rgba(0,0,0,0.28)',
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  // Info section
+  // Info
   info: {
-    padding: 14,
+    paddingHorizontal: 14,
+    paddingTop: 12,
+    paddingBottom: 14,
+    gap: 5,
   },
   name: {
+    fontSize: 16,
+    fontWeight: '700',
+    letterSpacing: -0.2,
+  },
+  priceRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  price: {
     fontSize: 15,
     fontWeight: '700',
-    marginBottom: 3,
-    letterSpacing: -0.1,
+  },
+  wasPrice: {
+    fontSize: 13,
+    fontWeight: '500',
+    textDecorationLine: 'line-through',
   },
   desc: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '500',
-    marginBottom: 10,
-    lineHeight: 17,
+    lineHeight: 18,
   },
-  footer: {
+  metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: 4,
+    marginTop: 2,
+    flexWrap: 'nowrap',
   },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    flex: 1,
+  ratingVal: {
+    fontSize: 13,
+    fontWeight: '700',
   },
-  locationDot: {
-    width: 5,
-    height: 5,
-    borderRadius: 2.5,
+  dot: {
+    fontSize: 13,
+    fontWeight: '600',
+  },
+  reviewCount: {
+    fontSize: 13,
+    fontWeight: '500',
   },
   location: {
-    fontSize: 11,
+    fontSize: 13,
     fontWeight: '500',
-    flex: 1,
-  },
-  reviewsChip: {
-    backgroundColor: Colors.primaryBg,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 8,
-  },
-  reviews: {
-    fontSize: 10,
-    fontWeight: '700',
+    flexShrink: 1,
   },
 });
