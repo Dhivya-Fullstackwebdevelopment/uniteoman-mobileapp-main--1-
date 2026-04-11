@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Unite Oman",
+    "slug": "unite-oman",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "scheme": "uniteoman",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#1B4B8A"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.uniteoman.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#1B4B8A"
+      },
+      "package": "com.uniteoman.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-secure-store",
+        {
+          "faceIDPermission": "Allow Unite Oman to access your Face ID biometric data."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
