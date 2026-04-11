@@ -15,9 +15,7 @@ import { Colors, Gradients } from '../constants/Colors';
 import { API_BASE_URL } from '../constants/api';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-// Full-width card (matches uploaded image style)
-const CARD_WIDTH = SCREEN_WIDTH - 32; // 16px margin each side
+const CARD_WIDTH = SCREEN_WIDTH - 32;
 
 export function buildImageUrl(url?: string): string | undefined {
   if (!url) return undefined;
@@ -38,26 +36,42 @@ interface ShelfCardProps {
   business: BusinessCardType;
   badge?: string;
   index?: number;
-  /** @deprecated – all cards are now full-width; kept for backwards compat */
   fullWidth?: boolean;
+  
+  round?: boolean;
 }
 
 export default function ShelfCard({
   business,
   badge,
   index = 0,
+  round = false,
 }: ShelfCardProps) {
   const C = Colors;
   const fallbackImg = FALLBACK_IMAGES[index % FALLBACK_IMAGES.length];
   const coverUri =
     buildImageUrl(business.cover_image_url || business.logo_url) || fallbackImg;
 
-  // Mock "was" price for deals – replace with real field if available
   const hasDiscount = business.has_deal;
-  const currentPrice = business.price ?? null;
-  const wasPrice = hasDiscount && currentPrice ? Math.round(currentPrice * 1.25) : null;
+ 
+  const isVerified = (business as any).is_verified ?? false;
 
-  const isVerified = business.is_verified ?? false;
+  if (round) {
+    return (
+      <TouchableOpacity
+        style={styles.roundCard}
+        onPress={() => router.push(`/business/${business.slug}`)}
+        activeOpacity={0.88}
+      >
+        <View style={styles.roundImageWrap}>
+          <Image source={{ uri: coverUri }} style={styles.roundImage} resizeMode="cover" />
+        </View>
+        <Text style={[styles.roundName, { color: C.text }]} numberOfLines={2}>
+          {business.name_en}
+        </Text>
+      </TouchableOpacity>
+    );
+  }
 
   return (
     <TouchableOpacity
@@ -65,11 +79,9 @@ export default function ShelfCard({
       onPress={() => router.push(`/business/${business.slug}`)}
       activeOpacity={0.93}
     >
-      {/* ── Image ───────────────────────────────────────────── */}
+      {/* Image */}
       <View style={styles.imageWrap}>
         <Image source={{ uri: coverUri }} style={styles.image} resizeMode="cover" />
-
-        {/* Subtle bottom fade */}
         <LinearGradient
           colors={['transparent', 'rgba(0,0,0,0.18)']}
           style={styles.imageFade}
@@ -81,7 +93,7 @@ export default function ShelfCard({
           {isVerified && (
             <View style={styles.verifiedBadge}>
               <Ionicons name="checkmark-circle" size={11} color="#FFF" />
-              <Text style={styles.verifiedText}>Verified</Text>
+              <Text style={styles.badgeText}>Verified</Text>
             </View>
           )}
           {badge && !isVerified && (
@@ -91,54 +103,37 @@ export default function ShelfCard({
                 { backgroundColor: badge === 'New' ? C.success : C.primary },
               ]}
             >
-              {badge === 'New' && (
-                <Ionicons name="sparkles" size={9} color="#FFF" />
-              )}
-              <Text style={styles.verifiedText}>{badge.toUpperCase()}</Text>
+              {badge === 'New' && <Ionicons name="sparkles" size={9} color="#FFF" />}
+              <Text style={styles.badgeText}>{badge.toUpperCase()}</Text>
             </View>
           )}
           {hasDiscount && (
             <View style={[styles.genericBadge, { backgroundColor: C.error }]}>
               <Ionicons name="pricetag" size={9} color="#FFF" />
-              <Text style={styles.verifiedText}>DEAL</Text>
+              <Text style={styles.badgeText}>DEAL</Text>
             </View>
           )}
         </View>
 
-        {/* Favourite button – top-right */}
-        <TouchableOpacity style={styles.favBtn} activeOpacity={0.8}>
+        {/* Favourite */}
+        {/* <TouchableOpacity style={styles.favBtn} activeOpacity={0.8}>
           <Ionicons name="heart-outline" size={18} color="#FFF" />
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
 
-      {/* ── Info ────────────────────────────────────────────── */}
+      {/* Info */}
       <View style={styles.info}>
-        {/* Row 1 – name */}
         <Text style={[styles.name, { color: C.text }]} numberOfLines={1}>
           {business.name_en}
         </Text>
 
-        {/* Row 2 – price */}
-        {currentPrice !== null ? (
-          <View style={styles.priceRow}>
-            <Text style={[styles.price, { color: C.text }]}>
-              {business.currency ?? 'OMR'} {currentPrice}
-            </Text>
-            {wasPrice && (
-              <Text style={[styles.wasPrice, { color: C.textMuted }]}>
-                was {wasPrice}
-              </Text>
-            )}
-          </View>
-        ) : (
-          <Text style={[styles.desc, { color: C.textSecondary }]} numberOfLines={1}>
-            {business.short_description ||
-              business.category?.name_en ||
-              'Service Provider'}
-          </Text>
-        )}
+        <Text style={[styles.desc, { color: C.textSecondary }]} numberOfLines={1}>
+          {business.short_description ||
+            business.category?.name_en ||
+            'Service Provider'}
+        </Text>
 
-        {/* Row 3 – rating · reviews · location */}
+        {/* rating · reviews · location */}
         <View style={styles.metaRow}>
           <Ionicons name="star" size={13} color={C.accent} />
           <Text style={[styles.ratingVal, { color: C.text }]}>
@@ -169,6 +164,8 @@ export default function ShelfCard({
   );
 }
 
+const ROUND_SIZE = Math.floor((SCREEN_WIDTH - 32 - 24) / 3);
+
 const styles = StyleSheet.create({
   card: {
     width: CARD_WIDTH,
@@ -183,18 +180,13 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     elevation: 5,
   },
-
-  // Image
   imageWrap: {
     width: '100%',
     height: 210,
     position: 'relative',
     backgroundColor: '#E2E8F0',
   },
-  image: {
-    width: '100%',
-    height: '100%',
-  },
+  image: { width: '100%', height: '100%' },
   imageFade: {
     position: 'absolute',
     bottom: 0,
@@ -202,8 +194,6 @@ const styles = StyleSheet.create({
     right: 0,
     height: 60,
   },
-
-  // Badges
   topLeft: {
     position: 'absolute',
     top: 12,
@@ -229,7 +219,7 @@ const styles = StyleSheet.create({
     paddingVertical: 5,
     borderRadius: 20,
   },
-  verifiedText: {
+  badgeText: {
     color: '#FFF',
     fontSize: 11,
     fontWeight: '700',
@@ -246,60 +236,48 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-
-  // Info
   info: {
     paddingHorizontal: 14,
     paddingTop: 12,
     paddingBottom: 14,
     gap: 5,
   },
-  name: {
-    fontSize: 16,
-    fontWeight: '700',
-    letterSpacing: -0.2,
-  },
-  priceRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  price: {
-    fontSize: 15,
-    fontWeight: '700',
-  },
-  wasPrice: {
-    fontSize: 13,
-    fontWeight: '500',
-    textDecorationLine: 'line-through',
-  },
-  desc: {
-    fontSize: 13,
-    fontWeight: '500',
-    lineHeight: 18,
-  },
+  name: { fontSize: 16, fontWeight: '700', letterSpacing: -0.2 },
+  desc: { fontSize: 13, fontWeight: '500', lineHeight: 18 },
   metaRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
     marginTop: 2,
-    flexWrap: 'nowrap',
   },
-  ratingVal: {
-    fontSize: 13,
-    fontWeight: '700',
+  ratingVal: { fontSize: 13, fontWeight: '700' },
+  dot: { fontSize: 13, fontWeight: '600' },
+  reviewCount: { fontSize: 13, fontWeight: '500' },
+  location: { fontSize: 13, fontWeight: '500', flexShrink: 1 },
+
+  roundCard: {
+    alignItems: 'center',
+    width: ROUND_SIZE,
   },
-  dot: {
+  roundImageWrap: {
+    width: ROUND_SIZE,
+    height: ROUND_SIZE,
+    borderRadius: ROUND_SIZE / 2,
+    overflow: 'hidden',
+    backgroundColor: '#E2E8F0',
+    marginBottom: 10,
+    shadowColor: '#0F172A',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  roundImage: { width: '100%', height: '100%' },
+  roundName: {
     fontSize: 13,
     fontWeight: '600',
-  },
-  reviewCount: {
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  location: {
-    fontSize: 13,
-    fontWeight: '500',
-    flexShrink: 1,
+    textAlign: 'center',
+    lineHeight: 18,
+    paddingHorizontal: 4,
   },
 });

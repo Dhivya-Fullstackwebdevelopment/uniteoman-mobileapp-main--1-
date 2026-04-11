@@ -18,12 +18,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useQuery } from '@tanstack/react-query';
 import { businessApi, catalogApi } from '../../lib/apiClient';
 import { Colors, Gradients } from '../../constants/Colors';
-import { API_BASE_URL } from '../../constants/api';
 import { BusinessCard as BusinessCardType } from '../../types';
 import { useSidebarStore } from '../../store/sidebarStore';
-import ShelfCard, { buildImageUrl } from '../../components/ShelfCard';
+import ShelfCard from '../../components/ShelfCard';
 
-// Slug → Ionicons icon map for the category grid
 const CATEGORY_ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
   'restaurants-cafes': 'restaurant-outline',
   'food-beverages': 'restaurant-outline',
@@ -80,7 +78,7 @@ function getCategoryColor(slug: string): string {
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-// ─── Reusable shelf section ───────────────────────────────────────────────────
+// ─── Standard vertical-stack shelf section ────────────────────────────────────
 interface ShelfSectionProps {
   title: string;
   subtitle: string;
@@ -106,8 +104,6 @@ function ShelfSection({ title, subtitle, items, seeAllRoute, badge }: ShelfSecti
           </TouchableOpacity>
         )}
       </View>
-
-      {/* Vertical stacked cards – matches uploaded image layout */}
       <View style={styles.cardList}>
         {items.map((item, i) => (
           <ShelfCard key={String(item.id)} business={item} badge={badge} index={i} />
@@ -117,15 +113,58 @@ function ShelfSection({ title, subtitle, items, seeAllRoute, badge }: ShelfSecti
   );
 }
 
-// ─── Home Screen ──────────────────────────────────────────────────────────────
+interface RoundShelfSectionProps {
+  title: string;
+  subtitle: string;
+  items: BusinessCardType[];
+  seeAllRoute?: string;
+}
+
+function RoundShelfSection({ title, subtitle, items, seeAllRoute }: RoundShelfSectionProps) {
+  const C = Colors;
+  if (!items || items.length === 0) return null;
+
+  const rows: BusinessCardType[][] = [];
+  for (let i = 0; i < items.length; i += 3) {
+    rows.push(items.slice(i, i + 3));
+  }
+
+  return (
+    <View style={styles.shelfSection}>
+      <View style={styles.sectionHeader}>
+        <View>
+          <Text style={[styles.sectionTitle, { color: C.text }]}>{title}</Text>
+          <Text style={[styles.sectionSub, { color: C.textMuted }]}>{subtitle}</Text>
+        </View>
+        {seeAllRoute && (
+          <TouchableOpacity onPress={() => router.push(seeAllRoute as any)}>
+            <Text style={[styles.seeAll, { color: C.primary }]}>See all →</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <View style={styles.roundGrid}>
+        {rows.map((row, ri) => (
+          <View key={ri} style={styles.roundRow}>
+            {row.map((item, ci) => (
+              <ShelfCard
+                key={String(item.id)}
+                business={item}
+                index={ri * 3 + ci}
+                round
+              />
+            ))}
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 export default function HomeScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const { openSidebar } = useSidebarStore();
   const C = Colors;
-  const { data: featured, refetch: refetchFeatured } = useQuery({
-    queryKey: ['featured-businesses'],
-    queryFn: () => businessApi.featured(8),
-  });
 
   const { data: categories, refetch: refetchCategories } = useQuery({
     queryKey: ['categories'],
@@ -149,7 +188,7 @@ export default function HomeScreen() {
 
   const { data: homeEssentialsData, refetch: refetchRetail } = useQuery({
     queryKey: ['home-essentials'],
-    queryFn: () => businessApi.list({ category: 'retail', per_page: 8 }),
+    queryFn: () => businessApi.list({ category: 'retail', per_page: 9 }), // multiples of 3
   });
 
   const { data: groomingData, refetch: refetchGrooming } = useQuery({
@@ -165,7 +204,6 @@ export default function HomeScreen() {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await Promise.all([
-      refetchFeatured(),
       refetchCategories(),
       refetchTopRated(),
       refetchNew(),
@@ -181,7 +219,6 @@ export default function HomeScreen() {
     <SafeAreaView style={[styles.safe, { backgroundColor: C.background }]} edges={['top']}>
       <StatusBar barStyle="dark-content" backgroundColor={C.background} />
 
-      {/* ── Top Bar ─────────────────────────────────────────────── */}
       <View style={styles.topBar}>
         <TouchableOpacity style={styles.menuBtn} onPress={openSidebar}>
           <View style={styles.menuLine} />
@@ -210,7 +247,6 @@ export default function HomeScreen() {
           />
         }
       >
-        {/* ── Search Bar ──────────────────────────────────────── */}
         <TouchableOpacity
           style={styles.searchBar}
           onPress={() => router.push('/(tabs)/explore')}
@@ -229,7 +265,6 @@ export default function HomeScreen() {
           </View>
         </TouchableOpacity>
 
-        {/* ── Explore Categories ──────────────────────────────── */}
         {categories && categories.length > 0 && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
@@ -273,7 +308,6 @@ export default function HomeScreen() {
           </View>
         )}
 
-        {/* ── All Shelf Sections (vertical full-width cards) ──── */}
         <View style={{ paddingBottom: 110 }}>
           <ShelfSection
             title="Trending"
@@ -302,7 +336,7 @@ export default function HomeScreen() {
             seeAllRoute="/category/it-software"
           />
 
-          <ShelfSection
+          <RoundShelfSection
             title="Home Essentials"
             subtitle="Retail & home services"
             items={homeEssentialsData?.items ?? []}
@@ -318,7 +352,6 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* ── FAB ─────────────────────────────────────────────────── */}
       <TouchableOpacity
         style={styles.fab}
         onPress={() => router.push('/(tabs)/explore')}
@@ -340,7 +373,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1 },
 
-  // Top bar
   topBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -369,7 +401,6 @@ const styles = StyleSheet.create({
     borderColor: Colors.background,
   },
 
-  // Search bar
   searchBar: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -407,7 +438,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
 
-  // Section headers
   section: { marginBottom: 28 },
   shelfSection: { marginBottom: 8 },
   sectionHeader: {
@@ -422,12 +452,17 @@ const styles = StyleSheet.create({
   seeAllBtn: { flexDirection: 'row', alignItems: 'center', gap: 2 },
   seeAll: { fontSize: 13, fontWeight: '600' },
 
-  // Card list – vertical stack with consistent side margins
-  cardList: {
+  cardList: { paddingHorizontal: 16 },
+
+  roundGrid: {
     paddingHorizontal: 16,
+    gap: 24,
+  },
+  roundRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 
-  // Categories
   catItem: { alignItems: 'center', width: 72 },
   catCircle: {
     width: 56,
@@ -439,7 +474,6 @@ const styles = StyleSheet.create({
   },
   catName: { fontSize: 11, fontWeight: '600', textAlign: 'center', lineHeight: 15 },
 
-  // FAB
   fab: {
     position: 'absolute',
     bottom: 26,
