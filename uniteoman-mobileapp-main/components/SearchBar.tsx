@@ -8,6 +8,7 @@ import {
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../constants/Colors';
+import { THEME } from './Reuse.tsx/Reusecolor';
 
 interface Props {
   value?: string;
@@ -37,8 +38,8 @@ export default function SearchBar({
         onPress={onPress}
         activeOpacity={0.85}
       >
-        <View style={[styles.iconWrap, { backgroundColor: C.primaryBg }]}>
-          <Ionicons name="search" size={16} color={C.primary} />
+        <View style={[styles.iconWrap, { backgroundColor: THEME.light }]}>
+          <Ionicons name="search" size={16} color={THEME.primary} />
         </View>
         <TextInput
           style={[styles.input, { color: C.textMuted }]}
@@ -56,8 +57,8 @@ export default function SearchBar({
 
   return (
     <View style={[styles.container, { backgroundColor: C.card, borderColor: C.border }]}>
-      <View style={[styles.iconWrap, { backgroundColor: C.primaryBg }]}>
-        <Ionicons name="search" size={16} color={C.primary} />
+      <View style={[styles.iconWrap, { backgroundColor: THEME.light }]}>
+        <Ionicons name="search" size={16} color={THEME.primary} />
       </View>
       <TextInput
         style={[styles.input, { color: C.text }]}

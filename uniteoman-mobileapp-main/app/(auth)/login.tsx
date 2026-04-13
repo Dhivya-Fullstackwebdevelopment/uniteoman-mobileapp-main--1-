@@ -20,6 +20,7 @@ import { router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../store/authStore';
 import { Colors, Gradients } from '../../constants/Colors';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -95,13 +96,14 @@ export default function LoginScreen() {
     }
   };
 
-  // gradient based on mode
+  const PINK = '#E91E63';
+  const PINK_LIGHT = '#FCE4EC';
   const heroColors: [string, string, string] = isVendorMode
-    ? ['#1e1b4b', '#312e81', '#4338CA']
-    : ['#3730A3', '#4338CA', '#6366F1'];
+    ? ['#AD1457', '#C2185B', '#E91E63']   // darker pink
+    : ['#FF4081', '#E91E63', '#F06292']; // main pink
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#3730A3' }}>
+    <View style={{ flex: 1, backgroundColor: '#E91E63' }}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
       <KeyboardAvoidingView
@@ -128,12 +130,12 @@ export default function LoginScreen() {
             <View style={styles.blob3} />
 
             {/* Floating service icons — Urban Company style */}
-            <ServiceBubble icon="cut-outline"           top={90}  left={22}  size={46} opacity={0.22} />
-            <ServiceBubble icon="car-outline"           top={65}  right={30} size={40} opacity={0.18} />
-            <ServiceBubble icon="home-outline"          top={145} right={60} size={50} opacity={0.14} />
-            <ServiceBubble icon="restaurant-outline"    top={175} left={55}  size={36} opacity={0.16} />
-            <ServiceBubble icon="fitness-outline"       top={110} left={120} size={34} opacity={0.12} />
-            <ServiceBubble icon="sparkles-outline"      top={50}  left={160} size={38} opacity={0.15} />
+            <ServiceBubble icon="cut-outline" top={90} left={22} size={46} opacity={0.22} />
+            <ServiceBubble icon="car-outline" top={65} right={30} size={40} opacity={0.18} />
+            <ServiceBubble icon="home-outline" top={145} right={60} size={50} opacity={0.14} />
+            <ServiceBubble icon="restaurant-outline" top={175} left={55} size={36} opacity={0.16} />
+            <ServiceBubble icon="fitness-outline" top={110} left={120} size={34} opacity={0.12} />
+            <ServiceBubble icon="sparkles-outline" top={50} left={160} size={38} opacity={0.15} />
 
             <SafeAreaView edges={['top']}>
               <View style={styles.heroContent}>
@@ -155,10 +157,10 @@ export default function LoginScreen() {
 
                 {/* Service category pills — Justdial style */}
                 <View style={styles.pillsRow}>
-                  <CategoryPill icon="cut-outline"         label="Salons" />
-                  <CategoryPill icon="car-outline"         label="Auto" />
-                  <CategoryPill icon="restaurant-outline"  label="Dining" />
-                  <CategoryPill icon="home-outline"        label="Home" />
+                  <CategoryPill icon="cut-outline" label="Salons" />
+                  <CategoryPill icon="car-outline" label="Auto" />
+                  <CategoryPill icon="restaurant-outline" label="Dining" />
+                  <CategoryPill icon="home-outline" label="Home" />
                 </View>
 
                 {/* Trust strip */}
@@ -188,32 +190,57 @@ export default function LoginScreen() {
             <View style={styles.sheetHandle} />
 
             {/* Mode toggle row */}
-            <View style={styles.modeRow}>
+            <View style={[styles.modeRow, { backgroundColor: PINK_LIGHT }]}>
               <TouchableOpacity
-                style={[styles.modeTab, !isVendorMode && styles.modeTabActive]}
+                style={[
+                  styles.modeTab,
+                  {
+                    backgroundColor: !isVendorMode ? '#FFF' : 'transparent',
+                    borderWidth: !isVendorMode ? 1 : 0,
+                    borderColor: PINK,
+                  },
+                ]}
                 onPress={() => setIsVendorMode(false)}
                 activeOpacity={0.8}
               >
                 <Ionicons
                   name="person-outline"
                   size={14}
-                  color={!isVendorMode ? C.primary : C.textMuted}
+                  color={!isVendorMode ? PINK : '#888'}
                 />
-                <Text style={[styles.modeTabText, !isVendorMode && { color: C.primary }]}>
+                <Text
+                  style={[
+                    styles.modeTabText,
+                    { color: !isVendorMode ? PINK : '#888' },
+                  ]}
+                >
                   Customer
                 </Text>
               </TouchableOpacity>
+
               <TouchableOpacity
-                style={[styles.modeTab, isVendorMode && styles.modeTabActive]}
+                style={[
+                  styles.modeTab,
+                  {
+                    backgroundColor: isVendorMode ? '#FFF' : 'transparent',
+                    borderWidth: isVendorMode ? 1 : 0,
+                    borderColor: PINK,
+                  },
+                ]}
                 onPress={() => setIsVendorMode(true)}
                 activeOpacity={0.8}
               >
                 <Ionicons
                   name="business-outline"
                   size={14}
-                  color={isVendorMode ? C.primary : C.textMuted}
+                  color={isVendorMode ? PINK : '#888'}
                 />
-                <Text style={[styles.modeTabText, isVendorMode && { color: C.primary }]}>
+                <Text
+                  style={[
+                    styles.modeTabText,
+                    { color: isVendorMode ? PINK : '#888' },
+                  ]}
+                >
                   Business
                 </Text>
               </TouchableOpacity>
@@ -235,7 +262,7 @@ export default function LoginScreen() {
               <View style={[
                 styles.fieldBox,
                 {
-                  borderColor: focusedField === 'email' ? C.primary : C.border,
+                  borderColor: focusedField === 'email' ? THEME.darkcolor : '#E0E0E0',
                   backgroundColor: focusedField === 'email' ? '#FAFBFF' : C.divider,
                 },
               ]}>
@@ -246,7 +273,7 @@ export default function LoginScreen() {
                   <Ionicons
                     name="mail-outline"
                     size={16}
-                    color={focusedField === 'email' ? C.primary : C.textMuted}
+                    color={focusedField === 'email' ? THEME.darkcolor : '#E0E0E0'}
                   />
                 </View>
                 <TextInput
@@ -276,13 +303,13 @@ export default function LoginScreen() {
               <View style={styles.fieldLabelRow}>
                 <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>Password</Text>
                 <TouchableOpacity>
-                  <Text style={[styles.forgotText, { color: C.primary }]}>Forgot?</Text>
+                  <Text style={[styles.forgotText, { color: THEME.darkcolor }]}>Forgot?</Text>
                 </TouchableOpacity>
               </View>
               <View style={[
                 styles.fieldBox,
                 {
-                  borderColor: focusedField === 'password' ? C.primary : C.border,
+                  borderColor: focusedField === 'password' ? THEME.darkcolor : C.border,
                   backgroundColor: focusedField === 'password' ? '#FAFBFF' : C.divider,
                 },
               ]}>
@@ -293,7 +320,7 @@ export default function LoginScreen() {
                   <Ionicons
                     name="lock-closed-outline"
                     size={16}
-                    color={focusedField === 'password' ? C.primary : C.textMuted}
+                    color={focusedField === 'password' ? THEME.darkcolor : '#E0E0E0'}
                   />
                 </View>
                 <TextInput
@@ -332,7 +359,7 @@ export default function LoginScreen() {
               activeOpacity={0.88}
             >
               <LinearGradient
-                colors={['#4338CA', '#6366F1']}
+                colors={THEME.darkGradient}
                 style={styles.signInGradient}
                 start={{ x: 0, y: 0 }}
                 end={{ x: 1, y: 0 }}
@@ -345,7 +372,7 @@ export default function LoginScreen() {
                       {isVendorMode ? 'Access Vendor Portal' : 'Sign In'}
                     </Text>
                     <View style={styles.signInArrow}>
-                      <Ionicons name="arrow-forward" size={16} color="#4338CA" />
+                      <Ionicons name="arrow-forward" size={16} color="#ffffff" />
                     </View>
                   </>
                 )}
@@ -366,7 +393,7 @@ export default function LoginScreen() {
               activeOpacity={0.85}
             >
               <View style={[styles.createIcon, { backgroundColor: C.primaryBg }]}>
-                <Ionicons name="person-add-outline" size={16} color={C.primary} />
+                <Ionicons name="person-add-outline" size={16} color={THEME.primary} />
               </View>
               <Text style={[styles.createText, { color: C.text }]}>Create an Account</Text>
             </TouchableOpacity>
@@ -380,9 +407,9 @@ export default function LoginScreen() {
             {/* Legal */}
             <Text style={[styles.legal, { color: C.textMuted }]}>
               By signing in you agree to our{' '}
-              <Text style={{ color: C.primary, fontWeight: '600' }}>Terms</Text>
+              <Text style={{ color: THEME.darkcolor, fontWeight: '600' }}>Terms</Text>
               {' & '}
-              <Text style={{ color: C.primary, fontWeight: '600' }}>Privacy Policy</Text>
+              <Text style={{ color: THEME.darkcolor, fontWeight: '600' }}>Privacy Policy</Text>
             </Text>
           </View>
         </ScrollView>
@@ -391,16 +418,12 @@ export default function LoginScreen() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 const styles = StyleSheet.create({
-  // ── Hero ──────────────────────────────────────────────────────────────────
   hero: {
     paddingBottom: 72,
     overflow: 'hidden',
     minHeight: H * 0.42,
   },
-
-  // Blobs
   blob1: {
     position: 'absolute', width: 260, height: 260, borderRadius: 130,
     backgroundColor: 'rgba(255,255,255,0.05)',
@@ -416,15 +439,12 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.06)',
     top: H * 0.12, left: W * 0.42,
   },
-
   heroContent: {
     alignItems: 'center',
     paddingTop: 44,
     paddingHorizontal: 24,
     paddingBottom: 8,
   },
-
-  // Logo mark
   logoMark: {
     marginBottom: 14,
     shadowColor: '#000',
@@ -456,8 +476,6 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     paddingHorizontal: 20,
   },
-
-  // Pills row
   pillsRow: {
     flexDirection: 'row',
     gap: 8,
@@ -465,8 +483,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 18,
   },
-
-  // Trust strip
   trustStrip: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -481,8 +497,6 @@ const styles = StyleSheet.create({
   trustItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   trustText: { color: 'rgba(255,255,255,0.85)', fontSize: 11, fontWeight: '600' },
   trustDivider: { width: 1, height: 14, backgroundColor: 'rgba(255,255,255,0.25)' },
-
-  // ── Sheet ──────────────────────────────────────────────────────────────────
   sheet: {
     flex: 1,
     borderTopLeftRadius: 30,
@@ -503,8 +517,6 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     marginBottom: 20,
   },
-
-  // Mode tabs
   modeRow: {
     flexDirection: 'row',
     backgroundColor: '#F1F5F9',
@@ -528,8 +540,6 @@ const styles = StyleSheet.create({
   modeTabText: {
     fontSize: 13, fontWeight: '700', color: Colors.textMuted,
   },
-
-  // Title
   sheetTitle: {
     fontSize: 24,
     fontWeight: '800',
@@ -542,8 +552,6 @@ const styles = StyleSheet.create({
     marginBottom: 26,
     lineHeight: 19,
   },
-
-  // Fields
   fieldGroup: { marginBottom: 14 },
   fieldLabelRow: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 7,
@@ -566,8 +574,6 @@ const styles = StyleSheet.create({
   },
   clearBtn: { padding: 6 },
   eyeBtn: { padding: 8 },
-
-  // Sign in button
   signInBtn: {
     borderRadius: 16,
     overflow: 'hidden',
@@ -587,19 +593,15 @@ const styles = StyleSheet.create({
   signInText: { color: '#FFF', fontSize: 16, fontWeight: '800', letterSpacing: 0.3 },
   signInArrow: {
     width: 28, height: 28, borderRadius: 14,
-    backgroundColor: '#FFF',
+    backgroundColor: '#010101',
     alignItems: 'center', justifyContent: 'center',
   },
-
-  // Divider
   divRow: {
     flexDirection: 'row', alignItems: 'center',
     marginVertical: 18, gap: 12,
   },
   divLine: { flex: 1, height: 1 },
   divText: { fontSize: 12, fontWeight: '500' },
-
-  // Create account
   createBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 10,
@@ -612,15 +614,11 @@ const styles = StyleSheet.create({
     alignItems: 'center', justifyContent: 'center',
   },
   createText: { fontSize: 15, fontWeight: '700' },
-
-  // Guest
   guestBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 6, marginTop: 14, paddingVertical: 8,
   },
   guestText: { fontSize: 13, fontWeight: '500' },
-
-  // Legal
   legal: {
     fontSize: 11, textAlign: 'center', marginTop: 18, lineHeight: 16,
   },

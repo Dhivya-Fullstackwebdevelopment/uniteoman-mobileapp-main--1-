@@ -7,6 +7,7 @@ import { businessApi } from '../../lib/apiClient';
 import { Colors } from '../../constants/Colors';
 import { BusinessCard } from '../../types';
 import { API_BASE_URL } from '../../constants/api';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 function buildUrl(url?: string) {
   if (!url) return undefined;
@@ -88,10 +89,10 @@ export default function VendorShopsScreen() {
                   <Text style={[styles.statLabel, { color: C.textMuted }]}>{shop.rating_count} Reviews</Text>
                 </View>
                 <View style={[styles.actionsBox, { flex: 1, alignItems: 'flex-end', flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }]}>
-                   <TouchableOpacity style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: C.primaryBg, borderRadius: 8 }} onPress={() => router.push(`/business/${shop.slug}`)}>
-                     <Text style={{ color: C.primary, fontSize: 12, fontWeight: '700' }}>View</Text>
+                   <TouchableOpacity style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: THEME.light, borderRadius: 8 }} onPress={() => router.push(`/business/${shop.slug}`)}>
+                     <Text style={{ color: THEME.primary, fontSize: 12, fontWeight: '700' }}>View</Text>
                    </TouchableOpacity>
-                   <TouchableOpacity style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: C.primary, borderRadius: 8 }} onPress={() => router.push(`/vendor/edit-shop/${shop.id}`)}>
+                   <TouchableOpacity style={{ paddingHorizontal: 14, paddingVertical: 8, backgroundColor: THEME.primary, borderRadius: 8 }} onPress={() => router.push(`/vendor/edit-shop/${shop.id}`)}>
                      <Text style={{ color: '#FFF', fontSize: 12, fontWeight: '700' }}>Edit</Text>
                    </TouchableOpacity>
                 </View>

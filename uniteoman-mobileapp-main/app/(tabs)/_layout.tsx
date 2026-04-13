@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 function TabIcon({
   name,
@@ -16,7 +17,7 @@ function TabIcon({
       <Ionicons
         name={name}
         size={22}
-        color={focused ? Colors.primary : Colors.tabBarInactive}
+        color={focused ? THEME.primary : Colors.tabBarInactive}
       />
     </View>
   );
@@ -30,7 +31,7 @@ export default function TabLayout() {
         tabBarStyle: styles.tabBar,
         tabBarShowLabel: true,
         tabBarLabelStyle: styles.tabLabel,
-        tabBarActiveTintColor: Colors.primary,
+        tabBarActiveTintColor: THEME.primary,
         tabBarInactiveTintColor: Colors.tabBarInactive,
         tabBarItemStyle: styles.tabItem,
       }}
@@ -113,6 +114,6 @@ const styles = StyleSheet.create({
     width: 36,
     height: 30,
     borderRadius: 10,
-    backgroundColor: Colors.primaryBg,
+    backgroundColor: THEME.light,
   },
 });

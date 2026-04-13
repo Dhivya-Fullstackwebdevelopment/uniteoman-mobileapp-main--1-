@@ -12,6 +12,7 @@ import { useAuthStore } from '../../store/authStore';
 import { Colors, Gradients } from '../../constants/Colors';
 import { BusinessCard } from '../../types';
 import { API_BASE_URL } from '../../constants/api';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 const { width: W } = Dimensions.get('window');
 const CARD_WIDTH = (W - 48) / 2;
@@ -86,15 +87,15 @@ function FavCard({ item, onRemove }: { item: BusinessCard; onRemove: () => void 
 function GuestEmpty() {
   return (
     <View style={styles.centerEmpty}>
-      <LinearGradient colors={['#EEF2FF', '#E0E7FF']} style={styles.emptyIconWrap}>
-        <Ionicons name="heart-outline" size={44} color={C.primary} />
+      <LinearGradient colors={[THEME.light, THEME.light]} style={[styles.emptyIconWrap, { backgroundColor: THEME.light }]}>
+        <Ionicons name="heart-outline" size={44} color={THEME.primary} />
       </LinearGradient>
       <Text style={[styles.emptyTitle, { color: C.text }]}>Save your favourites</Text>
       <Text style={[styles.emptySub, { color: C.textSecondary }]}>
         Sign in to bookmark salons, restaurants, and services you love.
       </Text>
       <TouchableOpacity style={styles.ctaWrap} onPress={() => router.push('/(auth)/login')}>
-        <LinearGradient colors={Gradients.primary} style={styles.ctaBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+        <LinearGradient colors={THEME.darkGradient}  style={styles.ctaBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
           <Text style={styles.ctaText}>Sign In</Text>
           <Ionicons name="arrow-forward" size={15} color="#FFF" />
         </LinearGradient>

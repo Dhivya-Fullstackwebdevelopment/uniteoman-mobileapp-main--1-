@@ -18,6 +18,7 @@ import { businessApi, bookingApi } from '../../lib/apiClient';
 import { Colors, Gradients } from '../../constants/Colors';
 import { BusinessCard } from '../../types';
 import { API_BASE_URL } from '../../constants/api';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 function buildUrl(url?: string) {
   if (!url) return undefined;
@@ -36,10 +37,10 @@ function getGreeting() {
 // ── Status badge sub-component ────────────────────────────────────────────────
 function StatusBadge({ status }: { status: BusinessCard['status'] }) {
   const map: Record<string, { color: string; bg: string; dot: string }> = {
-    active:    { color: '#059669', bg: '#D1FAE5', dot: '#10B981' },
-    pending:   { color: '#D97706', bg: '#FEF3C7', dot: '#F59E0B' },
+    active: { color: '#059669', bg: '#D1FAE5', dot: '#10B981' },
+    pending: { color: '#D97706', bg: '#FEF3C7', dot: '#F59E0B' },
     suspended: { color: '#DC2626', bg: '#FEE2E2', dot: '#EF4444' },
-    rejected:  { color: '#DC2626', bg: '#FEE2E2', dot: '#EF4444' },
+    rejected: { color: '#DC2626', bg: '#FEE2E2', dot: '#EF4444' },
   };
   const s = map[status] ?? map.pending;
   return (
@@ -231,7 +232,7 @@ export default function VendorDashboardScreen() {
       <Stack.Screen options={{ headerShown: false }} />
       {/* ── Header ──────────────────────────────────────────────── */}
       <LinearGradient
-        colors={['#3730A3', '#4338CA', '#6366F1']}
+        colors={THEME.gradient}
         style={styles.header}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -353,7 +354,7 @@ export default function VendorDashboardScreen() {
             <View style={styles.bookingsCard}>
               {recentBookings.map((booking: any, i: number) => {
                 const statusMap: Record<string, { color: string; bg: string }> = {
-                  pending:   { color: '#D97706', bg: '#FEF3C7' },
+                  pending: { color: '#D97706', bg: '#FEF3C7' },
                   confirmed: { color: '#059669', bg: '#D1FAE5' },
                   cancelled: { color: '#DC2626', bg: '#FEE2E2' },
                   completed: { color: '#6366F1', bg: '#EEF2FF' },
@@ -465,20 +466,26 @@ export default function VendorDashboardScreen() {
                     {/* Actions */}
                     <View style={styles.shopActions}>
                       <TouchableOpacity
-                        style={[styles.shopActionBtn, { backgroundColor: C.primaryBg, borderColor: C.primaryBgDeep }]}
+                        style={[
+                          styles.shopActionBtn,
+                          {
+                            backgroundColor: THEME.grayLight,
+                            borderColor: THEME.grayBorder,
+                          }
+                        ]}
                         onPress={() => router.push(`/business/${shop.slug}`)}
                       >
-                        <Ionicons name="eye-outline" size={14} color={C.primary} />
-                        <Text style={[styles.shopActionText, { color: C.primary }]}>
+                        <Ionicons name="eye-outline" size={14} color={THEME.grayText} />
+                        <Text style={[styles.shopActionText, { color: THEME.grayText }]}>
                           Preview
                         </Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        style={[styles.shopActionBtn, { backgroundColor: C.primary, borderColor: C.primary }]}
+                        style={[styles.shopActionBtn, { backgroundColor: C.primary }]}
                         onPress={() => router.push(`/vendor/edit-shop/${shop.id}`)}
                       >
                         <LinearGradient
-                          colors={Gradients.primary}
+                          colors={THEME.darkGradient}
                           style={StyleSheet.absoluteFillObject}
                           start={{ x: 0, y: 0 }}
                           end={{ x: 1, y: 0 }}

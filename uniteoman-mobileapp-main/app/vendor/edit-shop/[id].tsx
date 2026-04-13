@@ -12,6 +12,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { businessApi, catalogApi, commonApi } from '../../../lib/apiClient';
 import { Colors, Gradients } from '../../../constants/Colors';
 import { API_BASE_URL } from '../../../constants/api';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 const DEFAULT_HOURS = {
   monday:    { open: '09:00', close: '18:00', closed: false },
@@ -114,8 +115,8 @@ function Section({ icon, title, children }: { icon: keyof typeof Ionicons.glyphM
   return (
     <View style={[sStyles.card, { backgroundColor: C.card }]}>
       <View style={sStyles.header}>
-        <View style={[sStyles.iconWrap, { backgroundColor: C.primaryBg }]}>
-          <Ionicons name={icon} size={18} color={C.primary} />
+        <View style={[sStyles.iconWrap, { backgroundColor: THEME.light }]}>
+          <Ionicons name={icon} size={18} color={THEME.primary} />
         </View>
         <Text style={[sStyles.title, { color: C.text }]}>{title}</Text>
       </View>
@@ -255,7 +256,7 @@ export default function EditShopScreen() {
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
-      <LinearGradient colors={Gradients.primary} style={styles.pageHeader} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
+      <LinearGradient colors={THEME.gradient} style={styles.pageHeader} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}>
         <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
           <Ionicons name="arrow-back" size={20} color="#FFF" />
         </TouchableOpacity>
@@ -440,7 +441,7 @@ export default function EditShopScreen() {
           disabled={updateMu.isPending}
           activeOpacity={0.85}
         >
-          <LinearGradient colors={Gradients.primary} style={styles.bottomSaveGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+          <LinearGradient colors={THEME.gradient} style={styles.bottomSaveGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
             {updateMu.isPending
               ? <ActivityIndicator color="#FFF" />
               : <><Ionicons name="save-outline" size={18} color="#FFF" /><Text style={styles.bottomSaveText}>Save All Changes</Text></>}

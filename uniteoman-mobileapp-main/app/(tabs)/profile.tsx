@@ -12,6 +12,7 @@ import { businessApi } from '../../lib/apiClient';
 import { useAuthStore } from '../../store/authStore';
 import { useFavoritesStore } from '../../store/favoritesStore';
 import { Colors, Gradients } from '../../constants/Colors';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 const C = Colors;
 const { width: W } = Dimensions.get('window');
@@ -74,8 +75,8 @@ function MenuItem({ icon, label, value, badge, onPress, danger, last }: {
       onPress={onPress}
       activeOpacity={0.75}
     >
-      <View style={[mi.iconBox, { backgroundColor: danger ? '#FEE2E2' : C.primaryBg }]}>
-        <Ionicons name={icon} size={17} color={danger ? C.error : C.primary} />
+      <View style={[mi.iconBox, { backgroundColor: danger ? '#FEE2E2' : THEME.light }]}>
+        <Ionicons name={icon} size={17} color={danger ? C.error : THEME.primary} />
       </View>
       <Text style={[mi.label, { color: danger ? C.error : C.text }]}>{label}</Text>
       <View style={{ flex: 1 }} />
@@ -125,7 +126,7 @@ function GuestProfile() {
     <SafeAreaView style={{ flex: 1, backgroundColor: C.background }} edges={['top']}>
       <StatusBar barStyle="light-content" />
       <LinearGradient
-        colors={['#3730A3', '#4338CA', '#6366F1']}
+        colors={THEME.gradient}
         style={guestSt.hero}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -149,13 +150,13 @@ function GuestProfile() {
       {/* Benefit chips */}
       <View style={guestSt.benefitsRow}>
         {[
-          { icon: 'heart-outline' as const,   label: 'Save Favourites' },
-          { icon: 'person-outline' as const,  label: 'Your Profile' },
-          { icon: 'star-outline' as const,    label: 'Leave Reviews' },
+          { icon: 'heart-outline' as const, label: 'Save Favourites' },
+          { icon: 'person-outline' as const, label: 'Your Profile' },
+          { icon: 'star-outline' as const, label: 'Leave Reviews' },
         ].map((b, i) => (
           <View key={i} style={[guestSt.chip, { backgroundColor: C.card }]}>
             <View style={guestSt.chipIcon}>
-              <Ionicons name={b.icon} size={16} color={C.primary} />
+              <Ionicons name={b.icon} size={16} color={THEME.primary} />
             </View>
             <Text style={[guestSt.chipLabel, { color: C.text }]}>{b.label}</Text>
           </View>
@@ -167,16 +168,16 @@ function GuestProfile() {
           style={[guestSt.btnWrap, { flex: 1.4, borderRadius: 14, overflow: 'hidden' }]}
           onPress={() => router.push('/(auth)/login')}
         >
-          <LinearGradient colors={Gradients.primary} style={guestSt.signInBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+          <LinearGradient colors={THEME.darkGradient} style={guestSt.signInBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
             <Text style={guestSt.signInText}>Sign In</Text>
             <Ionicons name="arrow-forward" size={16} color="#FFF" />
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[guestSt.createBtn, { flex: 1, borderColor: C.primary }]}
+          style={[guestSt.createBtn, { flex: 1, borderColor: THEME.darkcolor }]}
           onPress={() => router.push('/(auth)/register')}
         >
-          <Text style={[guestSt.createText, { color: C.primary }]}>Register</Text>
+          <Text style={[guestSt.createText, { color: THEME.darkcolor }]}>Register</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -207,7 +208,7 @@ const guestSt = StyleSheet.create({
   sub: { fontSize: 13, color: 'rgba(255,255,255,0.72)', textAlign: 'center', lineHeight: 20 },
   benefitsRow: { flexDirection: 'row', paddingHorizontal: 16, paddingTop: 20, gap: 10 },
   chip: { flex: 1, alignItems: 'center', paddingVertical: 12, borderRadius: 14, gap: 6, shadowColor: '#0F172A', shadowOpacity: 0.05, shadowRadius: 8, elevation: 2 },
-  chipIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: C.primaryBg, alignItems: 'center', justifyContent: 'center' },
+  chipIcon: { width: 36, height: 36, borderRadius: 11, backgroundColor: THEME.light, alignItems: 'center', justifyContent: 'center' },
   chipLabel: { fontSize: 11, fontWeight: '700', textAlign: 'center' },
   btnRow: { flexDirection: 'row', gap: 12, paddingHorizontal: 16, paddingTop: 20 },
   btnWrap: {},
@@ -229,7 +230,7 @@ export default function ProfileScreen() {
     enabled: isAuthenticated && isVendor,
   });
 
-  const initials   = getInitials(user?.email);
+  const initials = getInitials(user?.email);
   const displayName = getDisplayName(user?.email);
 
   const handleLogout = () => {
@@ -251,7 +252,8 @@ export default function ProfileScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 50 }}>
         {/* ── Hero header ──────────────────────────────────────────── */}
         <LinearGradient
-          colors={isVendor ? ['#1e1b4b', '#312e81', '#4338CA'] : ['#3730A3', '#4338CA', '#6366F1']}
+          // colors={isVendor ? ['#1e1b4b', '#312e81', '#4338CA'] : ['#3730A3', '#4338CA', '#6366F1']}
+          colors={THEME.gradient}
           style={styles.hero}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
@@ -293,10 +295,10 @@ export default function ProfileScreen() {
           {isVendor ? (
             <View style={styles.statsBar}>
               {[
-                { label: 'Views',    value: stats?.total_views ?? 0,         icon: 'eye-outline' as const,    color: '#A5B4FC' },
-                { label: 'Rating',   value: stats?.avg_rating?.toFixed(1) ?? '0.0', icon: 'star-outline' as const, color: '#FBBF24' },
-                { label: 'Reviews',  value: stats?.total_reviews ?? 0,       icon: 'chatbubble-outline' as const, color: '#34D399' },
-                { label: 'Services', value: stats?.total_services ?? 0,      icon: 'color-wand-outline' as const, color: '#F9A8D4' },
+                { label: 'Views', value: stats?.total_views ?? 0, icon: 'eye-outline' as const, color: '#A5B4FC' },
+                { label: 'Rating', value: stats?.avg_rating?.toFixed(1) ?? '0.0', icon: 'star-outline' as const, color: '#FBBF24' },
+                { label: 'Reviews', value: stats?.total_reviews ?? 0, icon: 'chatbubble-outline' as const, color: '#34D399' },
+                { label: 'Services', value: stats?.total_services ?? 0, icon: 'color-wand-outline' as const, color: '#F9A8D4' },
               ].map((s, i, arr) => (
                 <React.Fragment key={s.label}>
                   <View style={styles.statItem}>
@@ -311,8 +313,8 @@ export default function ProfileScreen() {
             <View style={styles.statsBar}>
               {[
                 { label: 'Favourites', value: favorites.length, icon: 'heart-outline' as const },
-                { label: 'Reviews',    value: 0,                icon: 'star-outline' as const },
-                { label: 'Member',     value: '✓',              icon: 'shield-checkmark-outline' as const },
+                { label: 'Reviews', value: 0, icon: 'star-outline' as const },
+                { label: 'Member', value: '✓', icon: 'shield-checkmark-outline' as const },
               ].map((s, i, arr) => (
                 <React.Fragment key={s.label}>
                   <View style={styles.statItem}>
@@ -329,12 +331,12 @@ export default function ProfileScreen() {
         {/* ── Vendor management ────────────────────────────────────── */}
         {isVendor && (
           <Section title="Vendor Management">
-            <MenuItem icon="grid-outline"        label="Dashboard"      onPress={() => router.push('/vendor/dashboard')} />
-            <MenuItem icon="business-outline"    label="My Shops"       onPress={() => router.push('/vendor/shops')} />
-            <MenuItem icon="calendar-outline"    label="Appointments"   onPress={() => router.push('/vendor/appointments')} />
-            <MenuItem icon="color-wand-outline"  label="Services"       onPress={() => router.push('/vendor/services')} />
-            <MenuItem icon="star-outline"        label="Reviews"        onPress={() => router.push('/vendor/reviews')} />
-            <MenuItem icon="settings-outline"    label="Vendor Settings" onPress={() => router.push('/vendor/settings')} last />
+            <MenuItem icon="grid-outline" label="Dashboard" onPress={() => router.push('/vendor/dashboard')} />
+            <MenuItem icon="business-outline" label="My Shops" onPress={() => router.push('/vendor/shops')} />
+            <MenuItem icon="calendar-outline" label="Appointments" onPress={() => router.push('/vendor/appointments')} />
+            <MenuItem icon="color-wand-outline" label="Services" onPress={() => router.push('/vendor/services')} />
+            <MenuItem icon="star-outline" label="Reviews" onPress={() => router.push('/vendor/reviews')} />
+            <MenuItem icon="settings-outline" label="Vendor Settings" onPress={() => router.push('/vendor/settings')} last />
           </Section>
         )}
 
@@ -347,16 +349,16 @@ export default function ProfileScreen() {
               badge={favorites.length || undefined}
               onPress={() => router.push('/(tabs)/bookings')}
             />
-            <MenuItem icon="star-outline"    label="My Reviews"        onPress={() => Alert.alert('Coming Soon')} />
-            <MenuItem icon="person-outline"  label="Edit Profile"      onPress={() => Alert.alert('Coming Soon')} />
-            <MenuItem icon="card-outline"    label="Payment Methods"   onPress={() => Alert.alert('Coming Soon')} last />
+            <MenuItem icon="star-outline" label="My Reviews" onPress={() => Alert.alert('Coming Soon')} />
+            <MenuItem icon="person-outline" label="Edit Profile" onPress={() => Alert.alert('Coming Soon')} />
+            <MenuItem icon="card-outline" label="Payment Methods" onPress={() => Alert.alert('Coming Soon')} last />
           </Section>
         )}
 
         {/* ── App ──────────────────────────────────────────────────── */}
         <Section title="App">
-          <MenuItem icon="settings-outline"        label="Settings"            onPress={() => Alert.alert('Coming Soon')} />
-          <MenuItem icon="headset-outline"         label="Support"             value="support@uniteoman.com" onPress={() => Alert.alert('Support', 'support@uniteoman.com')} />
+          <MenuItem icon="settings-outline" label="Settings" onPress={() => Alert.alert('Coming Soon')} />
+          <MenuItem icon="headset-outline" label="Support" value="support@uniteoman.com" onPress={() => Alert.alert('Support', 'support@uniteoman.com')} />
           <MenuItem icon="information-circle-outline" label="About UniteOman" onPress={() => Alert.alert('Coming Soon')} last />
         </Section>
 
@@ -396,7 +398,7 @@ const styles = StyleSheet.create({
   onlineDot: {
     position: 'absolute', bottom: -2, right: -2,
     width: 14, height: 14, borderRadius: 7,
-    backgroundColor: '#22C55E', borderWidth: 2, borderColor: '#3730A3',
+    backgroundColor: '#22C55E', borderWidth: 2, borderColor: '#ffffff',
   },
   heroInfo: { flex: 1, gap: 5 },
   heroName: { fontSize: 21, fontWeight: '800', color: '#FFF', letterSpacing: -0.3 },

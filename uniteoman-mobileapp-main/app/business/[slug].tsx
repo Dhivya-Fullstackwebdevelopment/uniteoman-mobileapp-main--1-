@@ -26,6 +26,7 @@ import { Colors, Gradients } from '../../constants/Colors';
 import { API_BASE_URL } from '../../constants/api';
 import { BookingCreate, ServiceOut } from '../../types';
 import { useFavoritesStore } from '../../store/favoritesStore';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HERO_HEIGHT = 300;
@@ -103,13 +104,13 @@ function SectionHeader({
   return (
     <View style={sh.row}>
       <View style={sh.titleRow}>
-        <View style={[sh.iconBox, { backgroundColor: C.primaryBg }]}>
-          <Ionicons name={icon} size={16} color={C.primary} />
+        <View style={[sh.iconBox, { backgroundColor: THEME.light }]}>
+          <Ionicons name={icon} size={16} color={THEME.primary} />
         </View>
         <Text style={[sh.title, { color: C.text }]}>{title}</Text>
         {badge !== undefined && badge > 0 && (
-          <View style={[sh.badge, { backgroundColor: C.primaryBgDeep }]}>
-            <Text style={[sh.badgeText, { color: C.primary }]}>{badge}</Text>
+          <View style={[sh.badge, { backgroundColor: THEME.light }]}>
+            <Text style={[sh.badgeText, { color: THEME.primary }]}>{badge}</Text>
           </View>
         )}
       </View>
@@ -122,7 +123,14 @@ const sh = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   iconBox: { width: 32, height: 32, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
   title: { fontSize: 17, fontWeight: '700', letterSpacing: -0.2 },
-  badge: { paddingHorizontal: 8, paddingVertical: 2, borderRadius: 10 },
+  badge: {
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 6,
+  },
   badgeText: { fontSize: 11, fontWeight: '800' },
 });
 
@@ -275,7 +283,7 @@ export default function BusinessDetailScreen() {
     if (!business) return;
     try {
       await Share.share({ message: `Check out ${business.name_en} on Unite Oman!` });
-    } catch {}
+    } catch { }
   }, [business]);
 
   const openLightbox = (index: number) => {
@@ -337,78 +345,8 @@ export default function BusinessDetailScreen() {
 
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
-        {/* ══════════ GALLERY ══════════════════════════════════════ */}
-        <View style={styles.galleryContainer}>
-          {/* Main hero image */}
-          <TouchableOpacity activeOpacity={0.95} onPress={() => openLightbox(0)}>
-            {allImages.length > 0 ? (
-              <Image source={{ uri: allImages[0] }} style={styles.heroImage} resizeMode="cover" />
-            ) : (
-              <View style={[styles.heroImage, styles.heroPlaceholder]}>
-                <LinearGradient colors={Gradients.primary} style={StyleSheet.absoluteFill} />
-                <Ionicons name="business" size={56} color="rgba(255,255,255,0.5)" />
-              </View>
-            )}
-            {/* Deep gradient overlay at bottom */}
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.72)']}
-              style={styles.heroGradient}
-              pointerEvents="none"
-            />
-          </TouchableOpacity>
-
-          {/* Thumbnail mosaic */}
-          {allImages.length > 1 && (
-            <View style={styles.thumbRow}>
-              {allImages.slice(1, 4).map((uri, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.thumbWrap}
-                  activeOpacity={0.88}
-                  onPress={() => openLightbox(i + 1)}
-                >
-                  <Image source={{ uri }} style={styles.thumbImg} resizeMode="cover" />
-                  {/* "More photos" overlay on last thumb */}
-                  {i === 2 && allImages.length > 4 && (
-                    <View style={styles.moreOverlay}>
-                      <Text style={styles.moreText}>+{allImages.length - 4}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {/* Photo count badge */}
-          {allImages.length > 1 && (
-            <TouchableOpacity style={styles.photoCountBadge} onPress={() => openLightbox(0)}>
-              <Ionicons name="images-outline" size={13} color="#FFF" />
-              <Text style={styles.photoCountText}>{allImages.length} photos</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Nav buttons */}
-          <SafeAreaView style={styles.navOverlay} edges={['top']}>
-            <TouchableOpacity style={styles.navBtn} onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={20} color="#FFF" />
-            </TouchableOpacity>
-            <View style={styles.navRight}>
-              <TouchableOpacity style={styles.navBtn} onPress={handleShare}>
-                <Ionicons name="share-outline" size={19} color="#FFF" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.navBtn}
-                onPress={() => business && toggleFavorite(business as any)}
-              >
-                <Ionicons
-                  name={business && isFavorite(business.id) ? 'heart' : 'heart-outline'}
-                  size={19}
-                  color={business && isFavorite(business.id) ? '#F87171' : '#FFF'}
-                />
-              </TouchableOpacity>
-            </View>
-          </SafeAreaView>
-        </View>
+        {/* GALLERY  */}
+       
 
         {/* ══════════ IDENTITY ══════════════════════════════════════ */}
         <View style={[styles.identityCard, { backgroundColor: C.card }]}>
@@ -492,7 +430,7 @@ export default function BusinessDetailScreen() {
             )}
             {business.phone && (
               <TouchableOpacity
-                style={[styles.qaCall, { backgroundColor: C.primary }]}
+                style={[styles.qaCall, { backgroundColor: THEME.primary }]}
                 onPress={handleCall}
                 activeOpacity={0.85}
               >
@@ -639,7 +577,7 @@ export default function BusinessDetailScreen() {
                     activeOpacity={0.78}
                   >
                     {/* Accent strip */}
-                    <View style={[styles.serviceAccent, { backgroundColor: C.primary }]} />
+                    <View style={[styles.serviceAccent, { backgroundColor: THEME.primary }]} />
                     <View style={styles.serviceInfo}>
                       <Text style={[styles.serviceName, { color: C.text }]}>{service.name}</Text>
                       {service.description && (
@@ -652,9 +590,9 @@ export default function BusinessDetailScreen() {
                       <Text style={[styles.servicePrice, { color: Colors.accent }]}>
                         {service.price ? `${service.price} OMR` : 'Ask'}
                       </Text>
-                      <View style={[styles.bookChip, { backgroundColor: C.primaryBg }]}>
-                        <Text style={[styles.bookChipText, { color: C.primary }]}>Book</Text>
-                        <Ionicons name="arrow-forward" size={11} color={C.primary} />
+                      <View style={[styles.bookChip, { backgroundColor: THEME.light }]}>
+                        <Text style={[styles.bookChipText, { color: THEME.primary }]}>Book</Text>
+                        <Ionicons name="arrow-forward" size={11} color={THEME.primary} />
                       </View>
                     </View>
                   </TouchableOpacity>
@@ -685,7 +623,7 @@ export default function BusinessDetailScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ══════════ BUSINESS HOURS ════════════════════════════════ */}
+        {/*  BUSINESS HOURS */}
         {business.business_hours && Object.keys(business.business_hours).length > 0 && (
           <View style={[styles.card, { backgroundColor: C.card }]}>
             <TouchableOpacity
@@ -742,7 +680,7 @@ export default function BusinessDetailScreen() {
           </View>
         )}
 
-        {/* ══════════ CONTACT ═══════════════════════════════════════ */}
+        {/* CONTACT  */}
         <View style={[styles.card, { backgroundColor: C.card }]}>
           <SectionHeader icon="call-outline" title="Contact" />
 
@@ -759,7 +697,7 @@ export default function BusinessDetailScreen() {
             )}
             {business.phone && (
               <TouchableOpacity
-                style={[styles.contactBtnCall, { backgroundColor: C.primary }]}
+                style={[styles.contactBtnCall, { backgroundColor: THEME.primary }]}
                 onPress={handleCall}
                 activeOpacity={0.85}
               >
@@ -840,17 +778,17 @@ export default function BusinessDetailScreen() {
               />
             ) : (
               <View style={[styles.mapImage, styles.mapPlaceholder]}>
-                <LinearGradient colors={[Colors.primaryBg, Colors.primaryBgDeep]} style={StyleSheet.absoluteFill} />
-                <Ionicons name="map-outline" size={40} color={Colors.primary} />
-                <Text style={{ color: Colors.primary, fontWeight: '600', fontSize: 13, marginTop: 8 }}>
+                <LinearGradient colors={THEME.lightgradient} style={StyleSheet.absoluteFill} />
+                <Ionicons name="map-outline" size={40} color={THEME.primary} />
+                <Text style={{ color: THEME.primary, fontWeight: '600', fontSize: 13, marginTop: 8 }}>
                   View on Map
                 </Text>
               </View>
             )}
             {/* Address bar */}
             <View style={[styles.mapBar, { backgroundColor: C.card }]}>
-              <View style={[styles.mapBarIcon, { backgroundColor: C.primaryBg }]}>
-                <Ionicons name="location" size={14} color={C.primary} />
+              <View style={[styles.mapBarIcon, { backgroundColor: THEME.light }]}>
+                <Ionicons name="location" size={14} color={THEME.primary} />
               </View>
               <Text style={[styles.mapAddress, { color: C.text }]} numberOfLines={1}>
                 {business.address || `${business.governorate?.name_en}, Sultanate of Oman`}
@@ -871,11 +809,11 @@ export default function BusinessDetailScreen() {
             badge={reviews?.length}
             action={
               <TouchableOpacity
-                style={[styles.writeReviewBtn, { borderColor: C.primary, backgroundColor: C.primaryBg }]}
+                style={[styles.writeReviewBtn, { borderColor: THEME.primary, backgroundColor: THEME.light }]}
                 onPress={() => setShowReviewForm(!showReviewForm)}
               >
-                <Ionicons name="create-outline" size={13} color={C.primary} />
-                <Text style={[styles.writeReviewText, { color: C.primary }]}>Write Review</Text>
+                <Ionicons name="create-outline" size={13} color={THEME.primary} />
+                <Text style={[styles.writeReviewText, { color: THEME.primary }]}>Write Review</Text>
               </TouchableOpacity>
             }
           />
@@ -1033,6 +971,77 @@ export default function BusinessDetailScreen() {
             </View>
           )}
         </View>
+         <View style={styles.galleryContainer}>
+          {/* Main hero image */}
+          <TouchableOpacity activeOpacity={0.95} onPress={() => openLightbox(0)}>
+            {allImages.length > 0 ? (
+              <Image source={{ uri: allImages[0] }} style={styles.heroImage} resizeMode="cover" />
+            ) : (
+              <View style={[styles.heroImage, styles.heroPlaceholder]}>
+                <LinearGradient colors={Gradients.primary} style={StyleSheet.absoluteFill} />
+                <Ionicons name="business" size={56} color="rgba(255,255,255,0.5)" />
+              </View>
+            )}
+            {/* Deep gradient overlay at bottom */}
+            <LinearGradient
+              colors={['transparent', 'rgba(0,0,0,0.72)']}
+              style={styles.heroGradient}
+              pointerEvents="none"
+            />
+          </TouchableOpacity>
+
+          {/* Thumbnail mosaic */}
+          {allImages.length > 1 && (
+            <View style={styles.thumbRow}>
+              {allImages.slice(1, 4).map((uri, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={styles.thumbWrap}
+                  activeOpacity={0.88}
+                  onPress={() => openLightbox(i + 1)}
+                >
+                  <Image source={{ uri }} style={styles.thumbImg} resizeMode="cover" />
+                  {/* "More photos" overlay on last thumb */}
+                  {i === 2 && allImages.length > 4 && (
+                    <View style={styles.moreOverlay}>
+                      <Text style={styles.moreText}>+{allImages.length - 4}</Text>
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          )}
+
+          {/* Photo count badge */}
+          {allImages.length > 1 && (
+            <TouchableOpacity style={styles.photoCountBadge} onPress={() => openLightbox(0)}>
+              <Ionicons name="images-outline" size={13} color="#FFF" />
+              <Text style={styles.photoCountText}>{allImages.length} photos</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Nav buttons */}
+          <SafeAreaView style={styles.navOverlay} edges={['top']}>
+            <TouchableOpacity style={styles.navBtn} onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={20} color="#FFF" />
+            </TouchableOpacity>
+            <View style={styles.navRight}>
+              <TouchableOpacity style={styles.navBtn} onPress={handleShare}>
+                <Ionicons name="share-outline" size={19} color="#FFF" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.navBtn}
+                onPress={() => business && toggleFavorite(business as any)}
+              >
+                <Ionicons
+                  name={business && isFavorite(business.id) ? 'heart' : 'heart-outline'}
+                  size={19}
+                  color={business && isFavorite(business.id) ? '#F87171' : '#FFF'}
+                />
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </View>
       </ScrollView>
 
       {/* ══════════ STICKY BOTTOM BAR ════════════════════════════════ */}
@@ -1054,7 +1063,7 @@ export default function BusinessDetailScreen() {
           activeOpacity={0.88}
         >
           <LinearGradient
-            colors={Gradients.primary}
+            colors={THEME.gradient}
             style={styles.bookNowBtn}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 0 }}
@@ -1127,7 +1136,7 @@ export default function BusinessDetailScreen() {
             {/* Modal header */}
             <View style={styles.modalHeader}>
               <View style={styles.modalHeaderLeft}>
-                <LinearGradient colors={Gradients.primary} style={styles.modalHeaderIcon}>
+                <LinearGradient colors={THEME.gradient} style={styles.modalHeaderIcon}>
                   <Ionicons name="calendar" size={20} color="#FFF" />
                 </LinearGradient>
                 <View>
@@ -1476,7 +1485,7 @@ const styles = StyleSheet.create({
   servicePrice: { fontSize: 15, fontWeight: '800' },
   bookChip: {
     flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 12,
   },
   bookChipText: { fontSize: 11, fontWeight: '700' },
 
@@ -1539,7 +1548,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14, paddingVertical: 12,
   },
   mapBarIcon: {
-    width: 30, height: 30, borderRadius: 9, alignItems: 'center', justifyContent: 'center',
+    width: 30, height: 30, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
   },
   mapAddress: { flex: 1, fontSize: 13, fontWeight: '500' },
   openMapsChip: {
@@ -1687,7 +1696,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8, paddingVertical: 6,
   },
   inputIconBox: {
-    width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
+    width: 34, height: 34, borderRadius: 12, alignItems: 'center', justifyContent: 'center',
   },
   inputInner: { flex: 1, fontSize: 14, fontWeight: '400', paddingVertical: 7 },
   textArea: { textAlignVertical: 'top', minHeight: 70 },

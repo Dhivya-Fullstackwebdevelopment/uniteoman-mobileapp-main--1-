@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAuthStore } from '../store/authStore';
 import { useSidebarStore } from '../store/sidebarStore';
 import { Colors, Gradients } from '../constants/Colors';
+import { THEME } from './Reuse.tsx/Reusecolor';
 
 const { width, height } = Dimensions.get('window');
 const SIDEBAR_WIDTH = width * 0.78;
@@ -26,8 +27,8 @@ interface NavItem {
 function NavRow({ item, onPress }: { item: NavItem; onPress: () => void }) {
   return (
     <TouchableOpacity style={styles.menuItem} onPress={onPress} activeOpacity={0.7}>
-      <View style={[styles.menuIconWrap, { backgroundColor: Colors.primaryBg }]}>
-        <Ionicons name={item.icon} size={18} color={Colors.primary} />
+      <View style={[styles.menuIconWrap, { backgroundColor: THEME.light }]}>
+        <Ionicons name={item.icon} size={18} color={THEME.primary} />
       </View>
       <Text style={[styles.menuText, { color: Colors.text }]}>{item.label}</Text>
       <Ionicons name="chevron-forward" size={14} color={Colors.textMuted} />
@@ -120,7 +121,7 @@ export default function Sidebar() {
         {/* Header — gradient for logged-in, plain for guest */}
         {isLoggedIn ? (
           <LinearGradient
-            colors={Gradients.hero}
+            colors={THEME.gradient}
             style={styles.headerGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -158,7 +159,7 @@ export default function Sidebar() {
               <View style={{ flex: 1 }}>
                 <Text style={[styles.headerNamePlain, { color: C.text }]}>Welcome</Text>
                 <TouchableOpacity onPress={() => handleNavigate('/(auth)/login')}>
-                  <Text style={[styles.loginLink, { color: C.primary }]}>Sign in or Register</Text>
+                  <Text style={[styles.loginLink, { color: THEME.primary }]}>Sign in or Register</Text>
                 </TouchableOpacity>
               </View>
               <TouchableOpacity onPress={closeSidebar} style={[styles.closeBtnPlain, { backgroundColor: C.divider }]}>
@@ -239,8 +240,6 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 14,
   },
-
-  // Gradient header (logged in)
   headerGradient: {
     paddingHorizontal: 20,
     paddingVertical: 24,
