@@ -259,8 +259,8 @@ export default function ExploreScreen() {
                       styles.chip,
                       {
                         backgroundColor:
-                          selectedGovernorate === gov.slug ? C.primary : C.background,
-                        borderColor: selectedGovernorate === gov.slug ? C.primary : C.border,
+                          selectedGovernorate === gov.slug ? THEME.primary : C.background,
+                        borderColor: selectedGovernorate === gov.slug ? THEME.primary : C.border,
                       },
                     ]}
                     onPress={() =>
@@ -326,8 +326,8 @@ export default function ExploreScreen() {
           )}
           ListEmptyComponent={() => (
             <View style={styles.emptyState}>
-              <View style={[styles.emptyIconWrap, { backgroundColor: C.primaryBg }]}>
-                <Ionicons name="search-outline" size={40} color={C.primary} />
+              <View style={[styles.emptyIconWrap, { backgroundColor: THEME.light }]}>
+                <Ionicons name="search-outline" size={40} color={THEME.primary} />
               </View>
               <Text style={[styles.emptyTitle, { color: C.text }]}>No Businesses Found</Text>
               <Text style={[styles.emptySubtitle, { color: C.textSecondary }]}>
@@ -335,7 +335,7 @@ export default function ExploreScreen() {
               </Text>
               {hasActiveFilters && (
                 <TouchableOpacity
-                  style={[styles.emptyBtn, { backgroundColor: C.primary }]}
+                  style={[styles.emptyBtn, { backgroundColor: THEME.primary }]}
                   onPress={clearFilters}
                 >
                   <Text style={styles.emptyBtnText}>Clear Filters</Text>
