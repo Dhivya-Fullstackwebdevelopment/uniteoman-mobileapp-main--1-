@@ -18,6 +18,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { businessApi } from '../../lib/apiClient';
 import { Colors } from '../../constants/Colors';
 import ShelfCard from '../../components/ShelfCard';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
@@ -335,7 +336,7 @@ export default function CategoryScreen() {
                 onPress={goExplore}
                 activeOpacity={0.8}
               >
-                <View style={[styles.exploreAllIcon, { backgroundColor: accent.bg }]}>
+                <View style={[styles.exploreAllIcon, { backgroundColor: THEME.primary }]}>
                   <Ionicons name="grid-outline" size={18} color={accent.color} />
                 </View>
                 <Text style={[styles.exploreAllText, { color: C.text }]}>

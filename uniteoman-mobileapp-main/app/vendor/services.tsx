@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { businessApi, serviceApi } from '../../lib/apiClient';
 import { Colors } from '../../constants/Colors';
 import { ServiceCreate } from '../../types';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 export default function VendorServicesScreen() {
   const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
@@ -79,7 +80,7 @@ export default function VendorServicesScreen() {
                 key={shop.id} 
                 style={[
                   styles.shopChip, 
-                  { backgroundColor: selectedShopId === shop.id ? C.primary : C.card, borderColor: selectedShopId === shop.id ? C.primary : C.border }
+                  { backgroundColor: selectedShopId === shop.id ? THEME.primary : C.card, borderColor: selectedShopId === shop.id ? THEME.primary : THEME.primary }
                 ]}
                 onPress={() => setSelectedShopId(shop.id)}
               >
@@ -94,7 +95,7 @@ export default function VendorServicesScreen() {
             <View style={styles.headerRow}>
               <Text style={[styles.title, { color: C.text }]}>Active Services</Text>
               {!isAdding && (
-                <TouchableOpacity style={[styles.addBtn, { backgroundColor: C.primary }]} onPress={() => setIsAdding(true)}>
+                <TouchableOpacity style={[styles.addBtn, { backgroundColor: THEME.primary }]} onPress={() => setIsAdding(true)}>
                   <Ionicons name="add-circle" size={18} color="#FFF" />
                   <Text style={styles.addBtnText}>Add Service</Text>
                 </TouchableOpacity>
@@ -102,7 +103,7 @@ export default function VendorServicesScreen() {
             </View>
 
             {isAdding && (
-              <View style={[styles.addForm, { backgroundColor: C.primaryBg, borderColor: C.primary }]}>
+              <View style={[styles.addForm, { backgroundColor: THEME.light, borderColor: THEME.primary }]}>
                 <TextInput style={[styles.input, { backgroundColor: C.background, borderColor: C.border, color: C.text }]} placeholder="Service Name (e.g. Haircut)" value={newService.name} onChangeText={t => setNewService({...newService, name: t})} />
                 <TextInput style={[styles.input, { backgroundColor: C.background, borderColor: C.border, color: C.text }]} placeholder="Price (e.g. 5 OMR)" value={newService.price} onChangeText={t => setNewService({...newService, price: t})} />
                 <TextInput style={[styles.input, { backgroundColor: C.background, borderColor: C.border, color: C.text }]} placeholder="Description (Optional)" value={newService.description} onChangeText={t => setNewService({...newService, description: t})} />
@@ -111,7 +112,7 @@ export default function VendorServicesScreen() {
                   <TouchableOpacity style={styles.cancelBtn} onPress={() => setIsAdding(false)}>
                     <Text style={[styles.cancelBtnText, { color: C.textMuted }]}>Cancel</Text>
                   </TouchableOpacity>
-                  <TouchableOpacity style={[styles.saveBtn, { backgroundColor: C.primary }]} onPress={handleAdd} disabled={addServiceMu.isPending}>
+                  <TouchableOpacity style={[styles.saveBtn, { backgroundColor: THEME.primary }]} onPress={handleAdd} disabled={addServiceMu.isPending}>
                     {addServiceMu.isPending ? <ActivityIndicator size="small" color="#FFF" /> : <Text style={styles.saveBtnText}>Save Service</Text>}
                   </TouchableOpacity>
                 </View>
@@ -131,7 +132,7 @@ export default function VendorServicesScreen() {
                   <View key={s.id} style={[styles.serviceCard, { backgroundColor: C.card, borderColor: C.divider }]}>
                     <View style={{ flex: 1 }}>
                       <Text style={[styles.serviceName, { color: C.text }]}>{s.name}</Text>
-                      <Text style={[styles.serviceDesc, { color: C.textSecondary }]}>{s.description || 'No description'} • <Text style={{ color: C.primary }}>{s.price || 'Price on request'}</Text></Text>
+                      <Text style={[styles.serviceDesc, { color: C.textSecondary }]}>{s.description || 'No description'} • <Text style={{ color: THEME.primary }}>{s.price || 'Price on request'}</Text></Text>
                     </View>
                     <TouchableOpacity onPress={() => handleDelete(s.id)} style={styles.deleteBtn}>
                       <Ionicons name="trash-outline" size={20} color="#EF4444" />

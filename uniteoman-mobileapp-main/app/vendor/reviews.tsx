@@ -4,6 +4,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Ionicons } from '@expo/vector-icons';
 import { reviewApi } from '../../lib/apiClient';
 import { Colors } from '../../constants/Colors';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 export default function VendorReviewsScreen() {
   const C = Colors;
@@ -29,7 +30,7 @@ export default function VendorReviewsScreen() {
     <ScrollView style={[styles.container, { backgroundColor: C.background }]} contentContainerStyle={{ padding: 20 }} showsVerticalScrollIndicator={false}>
       
       {/* Header Stats Component */}
-      <View style={[styles.headerCard, { backgroundColor: C.primary }]}>
+      <View style={[styles.headerCard, { backgroundColor: THEME.primary }]}>
         <View style={styles.headerLeft}>
            <Text style={styles.headerValue}>{avg}</Text>
            <View style={{ flexDirection: 'row', gap: 2 }}>
@@ -115,8 +116,8 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   cardHeader: { flexDirection: 'row', gap: 12, alignItems: 'center' },
-  reviewerAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: Colors.primaryBg, alignItems: 'center', justifyContent: 'center' },
-  avatarText: { color: Colors.primary, fontSize: 18, fontWeight: '800' },
+  reviewerAvatar: { width: 40, height: 40, borderRadius: 20, backgroundColor: THEME.light, alignItems: 'center', justifyContent: 'center' },
+  avatarText: { color: THEME.primary, fontSize: 18, fontWeight: '800' },
   reviewerName: { fontSize: 15, fontWeight: '800' },
   dateText: { fontSize: 12, fontWeight: '500' },
   commentText: { fontSize: 14, lineHeight: 20, marginTop: 4 },

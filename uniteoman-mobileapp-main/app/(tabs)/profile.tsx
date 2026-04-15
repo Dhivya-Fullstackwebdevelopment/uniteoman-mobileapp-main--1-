@@ -333,7 +333,7 @@ export default function ProfileScreen() {
           <Section title="Vendor Management">
             <MenuItem icon="grid-outline" label="Dashboard" onPress={() => router.push('/vendor/dashboard')} />
             <MenuItem icon="business-outline" label="My Shops" onPress={() => router.push('/vendor/shops')} />
-            <MenuItem icon="calendar-outline" label="Appointments" onPress={() => router.push('/vendor/appointments')} />
+            <MenuItem icon="calendar-outline" label="Appointments " onPress={() => router.push('/vendor/appointments')} />
             <MenuItem icon="color-wand-outline" label="Services" onPress={() => router.push('/vendor/services')} />
             <MenuItem icon="star-outline" label="Reviews" onPress={() => router.push('/vendor/reviews')} />
             <MenuItem icon="settings-outline" label="Vendor Settings" onPress={() => router.push('/vendor/settings')} last />

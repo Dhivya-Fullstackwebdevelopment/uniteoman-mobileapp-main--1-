@@ -157,10 +157,10 @@ function InputField({
       <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>{label}</Text>
       <View style={[
         styles.inputWrap,
-        { borderColor: focused ? C.primary : C.border, backgroundColor: focused ? '#FFF' : C.divider },
+        { borderColor: focused ? THEME.grayBorder : C.border, backgroundColor: focused ? '#FFF' : C.divider },
       ]}>
-        <View style={[styles.inputIconBox, { backgroundColor: focused ? C.primaryBg : 'transparent' }]}>
-          <Ionicons name={icon} size={15} color={focused ? C.primary : C.textMuted} />
+        <View style={[styles.inputIconBox, { backgroundColor: focused ? THEME.grayLight : 'transparent' }]}>
+          <Ionicons name={icon} size={15} color={focused ? THEME.grayText : C.textMuted} />
         </View>
         <TextInput
           style={[styles.inputInner, { color: C.text }]}
@@ -346,7 +346,7 @@ export default function BusinessDetailScreen() {
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
         {/* GALLERY  */}
-       
+
 
         {/* ══════════ IDENTITY ══════════════════════════════════════ */}
         <View style={[styles.identityCard, { backgroundColor: C.card }]}>
@@ -971,77 +971,57 @@ export default function BusinessDetailScreen() {
             </View>
           )}
         </View>
-         <View style={styles.galleryContainer}>
-          {/* Main hero image */}
-          <TouchableOpacity activeOpacity={0.95} onPress={() => openLightbox(0)}>
-            {allImages.length > 0 ? (
-              <Image source={{ uri: allImages[0] }} style={styles.heroImage} resizeMode="cover" />
-            ) : (
-              <View style={[styles.heroImage, styles.heroPlaceholder]}>
-                <LinearGradient colors={Gradients.primary} style={StyleSheet.absoluteFill} />
-                <Ionicons name="business" size={56} color="rgba(255,255,255,0.5)" />
+        {/* ══════════ PHOTO GALLERY ═════════════════ */}
+        <View style={[styles.card, { backgroundColor: C.card }]}>
+          <SectionHeader icon="images-outline" title="Photo Gallery" />
+
+          <View style={styles.galleryContainer}>
+            {/* Hero Image */}
+            <TouchableOpacity activeOpacity={0.95} onPress={() => openLightbox(0)}>
+              {allImages.length > 0 ? (
+                <Image source={{ uri: allImages[0] }} style={styles.heroImage} />
+              ) : (
+                <View style={[styles.heroImage, styles.heroPlaceholder]}>
+                  <Ionicons name="images-outline" size={50} color="#999" />
+                </View>
+              )}
+            </TouchableOpacity>
+
+            {/* Thumbnails */}
+            {allImages.length > 1 && (
+              <View style={styles.thumbRow}>
+                {allImages.slice(1, 4).map((uri, i) => (
+                  <TouchableOpacity key={i} onPress={() => openLightbox(i + 1)}>
+                    <Image source={{ uri }} style={styles.thumbImg} />
+                  </TouchableOpacity>
+                ))}
               </View>
             )}
-            {/* Deep gradient overlay at bottom */}
-            <LinearGradient
-              colors={['transparent', 'rgba(0,0,0,0.72)']}
-              style={styles.heroGradient}
-              pointerEvents="none"
-            />
-          </TouchableOpacity>
-
-          {/* Thumbnail mosaic */}
-          {allImages.length > 1 && (
-            <View style={styles.thumbRow}>
-              {allImages.slice(1, 4).map((uri, i) => (
-                <TouchableOpacity
-                  key={i}
-                  style={styles.thumbWrap}
-                  activeOpacity={0.88}
-                  onPress={() => openLightbox(i + 1)}
-                >
-                  <Image source={{ uri }} style={styles.thumbImg} resizeMode="cover" />
-                  {/* "More photos" overlay on last thumb */}
-                  {i === 2 && allImages.length > 4 && (
-                    <View style={styles.moreOverlay}>
-                      <Text style={styles.moreText}>+{allImages.length - 4}</Text>
-                    </View>
-                  )}
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-
-          {/* Photo count badge */}
-          {allImages.length > 1 && (
-            <TouchableOpacity style={styles.photoCountBadge} onPress={() => openLightbox(0)}>
-              <Ionicons name="images-outline" size={13} color="#FFF" />
-              <Text style={styles.photoCountText}>{allImages.length} photos</Text>
-            </TouchableOpacity>
-          )}
-
-          {/* Nav buttons */}
-          <SafeAreaView style={styles.navOverlay} edges={['top']}>
-            <TouchableOpacity style={styles.navBtn} onPress={() => router.back()}>
-              <Ionicons name="arrow-back" size={20} color="#FFF" />
-            </TouchableOpacity>
-            <View style={styles.navRight}>
-              <TouchableOpacity style={styles.navBtn} onPress={handleShare}>
-                <Ionicons name="share-outline" size={19} color="#FFF" />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={styles.navBtn}
-                onPress={() => business && toggleFavorite(business as any)}
-              >
-                <Ionicons
-                  name={business && isFavorite(business.id) ? 'heart' : 'heart-outline'}
-                  size={19}
-                  color={business && isFavorite(business.id) ? '#F87171' : '#FFF'}
-                />
-              </TouchableOpacity>
-            </View>
-          </SafeAreaView>
+          </View>
         </View>
+        <SafeAreaView
+          style={[styles.navOverlay, { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 99 }]}
+          edges={['top']}
+        >
+          <TouchableOpacity style={styles.navBtn} onPress={() => router.back()}>
+            <Ionicons name="arrow-back" size={20} color="#FFF" />
+          </TouchableOpacity>
+          <View style={styles.navRight}>
+            <TouchableOpacity style={styles.navBtn} onPress={handleShare}>
+              <Ionicons name="share-outline" size={19} color="#FFF" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.navBtn}
+              onPress={() => business && toggleFavorite(business as any)}
+            >
+              <Ionicons
+                name={business && isFavorite(business.id) ? 'heart' : 'heart-outline'}
+                size={19}
+                color={business && isFavorite(business.id) ? '#F87171' : '#FFF'}
+              />
+            </TouchableOpacity>
+          </View>
+        </SafeAreaView>
       </ScrollView>
 
       {/* ══════════ STICKY BOTTOM BAR ════════════════════════════════ */}
@@ -1165,7 +1145,7 @@ export default function BusinessDetailScreen() {
                     <TouchableOpacity
                       style={[
                         styles.serviceChip,
-                        !selectedService && { backgroundColor: C.primary, borderColor: C.primary },
+                        !selectedService && { backgroundColor: THEME.primary, borderColor: THEME.primary },
                       ]}
                       onPress={() => setSelectedService(null)}
                     >
@@ -1179,8 +1159,8 @@ export default function BusinessDetailScreen() {
                         style={[
                           styles.serviceChip,
                           selectedService?.id === svc.id && {
-                            backgroundColor: C.primary,
-                            borderColor: C.primary,
+                            backgroundColor: THEME.primary,
+                            borderColor: THEME.primary,
                           },
                         ]}
                         onPress={() => setSelectedService(svc)}
@@ -1240,7 +1220,7 @@ export default function BusinessDetailScreen() {
                 onPress={handleBooking}
               >
                 <LinearGradient
-                  colors={Gradients.primary}
+                  colors={THEME.gradient}
                   style={styles.submitBtnGradient}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
@@ -1271,7 +1251,7 @@ export default function BusinessDetailScreen() {
                   )}
                   {business.phone && (
                     <TouchableOpacity
-                      style={[styles.contactBtnCall, { backgroundColor: C.primary }]}
+                      style={[styles.contactBtnCall, { backgroundColor: THEME.primary }]}
                       onPress={handleCall}
                     >
                       <Ionicons name="call" size={17} color="#FFF" />
@@ -1319,17 +1299,25 @@ const styles = StyleSheet.create({
   goBackBtnText: { color: '#FFF', fontWeight: '700', fontSize: 15 },
 
   // ── Gallery ──────────────────────────────────────────────
-  galleryContainer: { position: 'relative', backgroundColor: '#0F172A' },
-  heroImage: { width: SCREEN_WIDTH, height: HERO_HEIGHT },
+
+  heroImage: { width: SCREEN_WIDTH, height: HERO_HEIGHT, borderRadius: 20 },
+  galleryContainer: { position: 'relative', backgroundColor: '#0F172A', borderRadius: 20, overflow: 'hidden' },
   heroPlaceholder: { alignItems: 'center', justifyContent: 'center' },
   heroGradient: {
     position: 'absolute', bottom: 0, left: 0, right: 0, height: '50%',
   },
   thumbRow: {
-    flexDirection: 'row', gap: 2, marginTop: 2,
+    flexDirection: 'row', gap: 4, marginTop: 4,
+    paddingHorizontal: 4,
   },
-  thumbWrap: { flex: 1, height: THUMB_HEIGHT },
-  thumbImg: { width: '100%', height: '100%' },
+  thumbWrap: {
+    flex: 1, height: THUMB_HEIGHT,
+    borderRadius: 12, overflow: 'hidden',
+  },
+  thumbImg: {
+    width: '100%', height: '100%',
+    borderRadius: 12,
+  },
   moreOverlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.58)',
@@ -1359,7 +1347,7 @@ const styles = StyleSheet.create({
 
   // ── Identity Card ────────────────────────────────────────
   identityCard: {
-    marginHorizontal: 16, marginTop: -20, borderRadius: 22,
+    marginHorizontal: 16, marginTop: 50, borderRadius: 22,
     padding: 20, paddingTop: 18,
     shadowColor: '#0F172A',
     shadowOffset: { width: 0, height: 8 },
@@ -1723,4 +1711,20 @@ const styles = StyleSheet.create({
 
   modalContactRow: { gap: 10, marginTop: 18 },
   orText: { textAlign: 'center', fontSize: 13, fontWeight: '500', marginBottom: 4 },
+  galleryTitleRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 7,
+    paddingHorizontal: 14, paddingVertical: 12,
+    backgroundColor: Colors.card,
+  },
+  galleryTitle: {
+    fontSize: 18, fontWeight: '800', color: Colors.text, letterSpacing: -0.3,
+  },
+  viewAllOverlay: {
+    position: 'absolute', bottom: 10, right: 10,
+    flexDirection: 'row', alignItems: 'center', gap: 5,
+    backgroundColor: 'rgba(0,0,0,0.62)',
+    paddingHorizontal: 10, paddingVertical: 7,
+    borderRadius: 10,
+  },
+  viewAllText: { color: '#FFF', fontSize: 12, fontWeight: '600' },
 });

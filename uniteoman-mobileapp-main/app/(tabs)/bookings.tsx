@@ -115,7 +115,7 @@ function NoFavorites() {
         Tap the ♡ on any business to save it here for quick access.
       </Text>
       <TouchableOpacity style={styles.ctaWrap} onPress={() => router.push('/(tabs)/explore')}>
-        <LinearGradient colors={Gradients.primary} style={styles.ctaBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+        <LinearGradient colors={THEME.gradient} style={styles.ctaBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
           <Text style={styles.ctaText}>Explore Businesses</Text>
           <Ionicons name="search" size={15} color="#FFF" />
         </LinearGradient>

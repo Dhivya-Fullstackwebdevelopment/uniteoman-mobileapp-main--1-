@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { bookingApi } from '../../lib/apiClient';
 import { Colors } from '../../constants/Colors';
 import { BookingOut } from '../../types';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 function StatusBadge({ status }: { status: BookingOut['status'] }) {
   const isPending = status === 'pending';
@@ -66,7 +67,7 @@ export default function VendorAppointmentsScreen() {
               <View style={styles.cardHeader}>
                 <View style={{ flex: 1, gap: 4 }}>
                   <Text style={[styles.bookingName, { color: C.text }]}>{booking.name}</Text>
-                  <Text style={[styles.bookingService, { color: C.primary }]}>{booking.service || 'General Booking'}</Text>
+                  <Text style={[styles.bookingService, { color: THEME.primary }]}>{booking.service || 'General Booking'}</Text>
                 </View>
                 <StatusBadge status={booking.status} />
               </View>

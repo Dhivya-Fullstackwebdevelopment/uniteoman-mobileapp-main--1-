@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Alert, Switch } f
 import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '../../constants/Colors';
 import { useAuthStore } from '../../store/authStore';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 export default function VendorSettingsScreen() {
   const [notificationsEnabled, setNotificationsEnabled] = React.useState(true);
@@ -36,7 +37,7 @@ export default function VendorSettingsScreen() {
     <ScrollView style={[styles.container, { backgroundColor: C.background }]} contentContainerStyle={{ padding: 20 }} showsVerticalScrollIndicator={false}>
       
       {/* Account Info */}
-      <View style={[styles.infoCard, { backgroundColor: C.primary }]}>
+      <View style={[styles.infoCard, { backgroundColor: THEME.primary }]}>
         <View style={styles.avatarBox}>
           <Text style={styles.avatarText}>{user?.email?.[0]?.toUpperCase() || 'V'}</Text>
         </View>
@@ -66,7 +67,7 @@ export default function VendorSettingsScreen() {
           </View>
           <View style={styles.toggleRow}>
              <View style={styles.toggleLeft}>
-               <Ionicons name="flash-outline" size={20} color={C.text} />
+               <Ionicons name="flash-outline" size={20} color={THEME.primary} />
                <View>
                  <Text style={[styles.toggleLabel, { color: C.text }]}>Auto-Accept Bookings</Text>
                  <Text style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>Confirm automatically if timeslot is free</Text>
