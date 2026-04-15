@@ -20,6 +20,7 @@ import SearchBar from '../../components/SearchBar';
 import BusinessCard from '../../components/BusinessCard';
 import LoadingScreen from '../../components/LoadingScreen';
 import { BusinessFilters } from '../../types';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 type SortOption = 'featured' | 'rating' | 'newest' | 'name';
 
@@ -111,8 +112,8 @@ export default function ExploreScreen() {
           style={[
             styles.filterToggleBtn,
             {
-              backgroundColor: hasActiveFilters ? C.primary : C.card,
-              borderColor: hasActiveFilters ? C.primary : C.border,
+              backgroundColor: hasActiveFilters ? THEME.primary : C.card,
+              borderColor: hasActiveFilters ? THEME.primary : C.border,
             },
           ]}
           onPress={() => setShowFilters((v) => !v)}
@@ -156,8 +157,8 @@ export default function ExploreScreen() {
                 style={[
                   styles.chip,
                   {
-                    backgroundColor: sort === opt.key ? C.primary : C.background,
-                    borderColor: sort === opt.key ? C.primary : C.border,
+                    backgroundColor: sort === opt.key ? THEME.primary : C.background,
+                    borderColor: sort === opt.key ? THEME.primary : C.border,
                   },
                 ]}
                 onPress={() => setSort(opt.key)}
@@ -187,8 +188,8 @@ export default function ExploreScreen() {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor: !selectedCategory ? C.primary : C.background,
-                      borderColor: !selectedCategory ? C.primary : C.border,
+                      backgroundColor: !selectedCategory ? THEME.primary : C.background,
+                      borderColor: !selectedCategory ? THEME.primary : C.border,
                     },
                   ]}
                   onPress={() => setSelectedCategory(undefined)}
@@ -203,8 +204,8 @@ export default function ExploreScreen() {
                     style={[
                       styles.chip,
                       {
-                        backgroundColor: selectedCategory === cat.slug ? C.primary : C.background,
-                        borderColor: selectedCategory === cat.slug ? C.primary : C.border,
+                        backgroundColor: selectedCategory === cat.slug ? THEME.primary : C.background,
+                        borderColor: selectedCategory === cat.slug ? THEME.primary : C.border,
                       },
                     ]}
                     onPress={() =>
@@ -239,8 +240,8 @@ export default function ExploreScreen() {
                   style={[
                     styles.chip,
                     {
-                      backgroundColor: !selectedGovernorate ? C.primary : C.background,
-                      borderColor: !selectedGovernorate ? C.primary : C.border,
+                      backgroundColor: !selectedGovernorate ? THEME.primary : C.background,
+                      borderColor: !selectedGovernorate ? THEME.primary : C.border,
                     },
                   ]}
                   onPress={() => setSelectedGovernorate(undefined)}

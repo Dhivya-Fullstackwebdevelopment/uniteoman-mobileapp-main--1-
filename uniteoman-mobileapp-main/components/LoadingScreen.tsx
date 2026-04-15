@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, ActivityIndicator, Text, StyleSheet } from 'react-native';
 import { Colors } from '../constants/Colors';
+import { THEME } from './Reuse.tsx/Reusecolor';
 
 interface Props {
   message?: string;
@@ -10,7 +11,7 @@ export default function LoadingScreen({ message }: Props) {
   return (
     <View style={styles.container}>
       <View style={styles.loaderCard}>
-        <ActivityIndicator size="large" color={Colors.primary} />
+        <ActivityIndicator size="large" color={THEME.primary} />
       </View>
       {message && (
         <Text style={styles.message}>{message}</Text>

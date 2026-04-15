@@ -298,7 +298,7 @@ export default function BusinessDetailScreen() {
         <StatusBar barStyle="light-content" />
         <View style={styles.loadingContainer}>
           <View style={[styles.loaderCard, { backgroundColor: C.card }]}>
-            <ActivityIndicator size="large" color={C.primary} />
+            <ActivityIndicator size="large" color={THEME.primary} />
           </View>
           <Text style={[styles.loadingText, { color: C.textMuted }]}>Loading profile…</Text>
         </View>
@@ -560,8 +560,8 @@ export default function BusinessDetailScreen() {
 
           {services.length === 0 ? (
             <View style={styles.emptyBox}>
-              <View style={[styles.emptyIconWrap, { backgroundColor: C.primaryBg }]}>
-                <Ionicons name="construct-outline" size={28} color={C.primary} />
+              <View style={[styles.emptyIconWrap, { backgroundColor: THEME.light }]}>
+                <Ionicons name="construct-outline" size={28} color={THEME.primary} />
               </View>
               <Text style={[styles.emptyTitle, { color: C.text }]}>No services listed</Text>
               <Text style={[styles.emptySub, { color: C.textMuted }]}>Contact the business for availability.</Text>
@@ -778,7 +778,7 @@ export default function BusinessDetailScreen() {
               />
             ) : (
               <View style={[styles.mapImage, styles.mapPlaceholder]}>
-                <LinearGradient colors={THEME.lightgradient} style={StyleSheet.absoluteFill} />
+                {/* <LinearGradient colors={THEME.lighgradient} style={StyleSheet.absoluteFill} /> */}
                 <Ionicons name="map-outline" size={40} color={THEME.primary} />
                 <Text style={{ color: THEME.primary, fontWeight: '600', fontSize: 13, marginTop: 8 }}>
                   View on Map
@@ -860,8 +860,8 @@ export default function BusinessDetailScreen() {
             <View style={[styles.reviewForm, { backgroundColor: C.background, borderColor: C.border }]}>
               <Text style={[styles.reviewFormTitle, { color: C.text }]}>Share Your Experience</Text>
               <View style={[styles.inputWrap, { borderColor: C.border, backgroundColor: '#FFF', marginBottom: 0 }]}>
-                <View style={[styles.inputIconBox, { backgroundColor: C.primaryBg }]}>
-                  <Ionicons name="person-outline" size={15} color={C.primary} />
+                <View style={[styles.inputIconBox, { backgroundColor: THEME.light }]}>
+                  <Ionicons name="person-outline" size={15} color={THEME.primary} />
                 </View>
                 <TextInput
                   style={[styles.inputInner, { color: C.text }]}
@@ -886,8 +886,8 @@ export default function BusinessDetailScreen() {
                 </View>
               </View>
               <View style={[styles.inputWrap, { borderColor: C.border, backgroundColor: '#FFF', alignItems: 'flex-start', paddingTop: 12 }]}>
-                <View style={[styles.inputIconBox, { backgroundColor: C.primaryBg, marginTop: 0 }]}>
-                  <Ionicons name="chatbubble-outline" size={14} color={C.primary} />
+                <View style={[styles.inputIconBox, { backgroundColor: THEME.light, marginTop: 0 }]}>
+                  <Ionicons name="chatbubble-outline" size={14} color={THEME.primary} />
                 </View>
                 <TextInput
                   style={[styles.inputInner, styles.textArea, { color: C.text }]}
@@ -900,17 +900,24 @@ export default function BusinessDetailScreen() {
                 />
               </View>
               <TouchableOpacity
-                style={[styles.submitBtn, { backgroundColor: C.primary }]}
+                style={styles.submitBtn}
                 onPress={handleSubmitReview}
               >
-                {reviewMutation.isPending ? (
-                  <ActivityIndicator color="#FFF" size="small" />
-                ) : (
-                  <>
-                    <Ionicons name="send" size={16} color="#FFF" />
-                    <Text style={styles.submitBtnText}>Publish Review</Text>
-                  </>
-                )}
+                <LinearGradient
+                  colors={THEME.gradient} // Using your theme gradient for consistency
+                  style={styles.submitBtnGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  {reviewMutation.isPending ? (
+                    <ActivityIndicator color="#FFF" size="small" />
+                  ) : (
+                    <>
+                      <Ionicons name="send" size={16} color="#FFF" />
+                      <Text style={styles.submitBtnText}>Publish Review</Text>
+                    </>
+                  )}
+                </LinearGradient>
               </TouchableOpacity>
             </View>
           )}
@@ -963,8 +970,8 @@ export default function BusinessDetailScreen() {
             </View>
           ) : (
             <View style={styles.emptyBox}>
-              <View style={[styles.emptyIconWrap, { backgroundColor: C.primaryBg }]}>
-                <Ionicons name="chatbubble-ellipses-outline" size={28} color={C.primary} />
+              <View style={[styles.emptyIconWrap, { backgroundColor: THEME.light }]}>
+                <Ionicons name="chatbubble-ellipses-outline" size={28} color={THEME.primary} />
               </View>
               <Text style={[styles.emptyTitle, { color: C.text }]}>No reviews yet</Text>
               <Text style={[styles.emptySub, { color: C.textMuted }]}>Be the first to share your experience!</Text>
@@ -1698,16 +1705,38 @@ const styles = StyleSheet.create({
   serviceChipText: { fontSize: 13, fontWeight: '600' },
 
   // Submit button
+  // submitBtn: {
+  //   borderRadius: 16, overflow: 'hidden',
+  //   shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 },
+  //   shadowOpacity: 0.3, shadowRadius: 10, elevation: 6,
+  // },
   submitBtn: {
-    borderRadius: 16, overflow: 'hidden',
-    shadowColor: Colors.primary, shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3, shadowRadius: 10, elevation: 6,
+    borderRadius: 16,
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'stretch',
+    marginTop: 16,
   },
+  // submitBtnGradient: {
+  //   flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+  //   gap: 8, paddingVertical: 17,
+  // },
+  // submitBtnText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
   submitBtnGradient: {
-    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
-    gap: 8, paddingVertical: 17,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    paddingVertical: 16,
+    width: '100%',
   },
-  submitBtnText: { color: '#FFF', fontSize: 15, fontWeight: '700' },
+
+  submitBtnText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: '700',
+    textAlign: 'center',
+  },
 
   modalContactRow: { gap: 10, marginTop: 18 },
   orText: { textAlign: 'center', fontSize: 13, fontWeight: '500', marginBottom: 4 },

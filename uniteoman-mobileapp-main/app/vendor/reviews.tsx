@@ -49,8 +49,8 @@ export default function VendorReviewsScreen() {
 
       {(!reviews || reviews.length === 0) ? (
         <View style={styles.emptyState}>
-          <View style={[styles.emptyIcon, { backgroundColor: C.divider }]}>
-            <Ionicons name="star-half-outline" size={32} color={C.textMuted} />
+          <View style={[styles.emptyIcon, { backgroundColor: THEME.light }]}>
+            <Ionicons name="star-half-outline" size={32} color={THEME.primary} />
           </View>
           <Text style={[styles.emptyText, { color: C.text }]}>No Reviews Yet</Text>
           <Text style={[styles.emptySub, { color: C.textSecondary }]}>When customers review your shops, they will appear here.</Text>

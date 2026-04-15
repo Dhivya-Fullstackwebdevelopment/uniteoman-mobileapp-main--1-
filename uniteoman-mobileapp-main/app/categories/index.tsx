@@ -19,42 +19,43 @@ import { catalogApi } from '../../lib/apiClient';
 import { Colors } from '../../constants/Colors';
 import { Category } from '../../types';
 import { getCategoryBanner } from '../../constants/CategoryBanners';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const CARD_GAP = 12;
 const CARD_PADDING = 20;
-const CARD_WIDTH = (SCREEN_WIDTH - CARD_PADDING * 2 - CARD_GAP) / 2;
-
+//const CARD_WIDTH = (SCREEN_WIDTH - CARD_PADDING * 2 - CARD_GAP) / 2;
+const CARD_WIDTH = SCREEN_WIDTH - CARD_PADDING * 2;
 // Slug → Ionicons icon map
 const CATEGORY_ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
-  'restaurants-cafes':    'restaurant-outline',
-  'food-beverages':       'restaurant-outline',
-  'coffee-cafes':         'cafe-outline',
-  'grooming-for-men':     'cut-outline',
-  'beauty-for-women':     'flower-outline',
-  'spa':                  'color-wand-outline',
-  'health-wellness':      'heart-outline',
-  'fitness-gym':          'barbell-outline',
-  'it-software':          'laptop-outline',
-  'electronics':          'hardware-chip-outline',
-  'retail':               'bag-handle-outline',
-  'fashion-clothing':     'shirt-outline',
-  'home-services':        'home-outline',
-  'cleaning-services':    'sparkles-outline',
-  'automotive':           'car-outline',
-  'education':            'school-outline',
-  'travel-tourism':       'airplane-outline',
-  'real-estate':          'business-outline',
-  'finance':              'card-outline',
-  'legal-services':       'briefcase-outline',
+  'restaurants-cafes': 'restaurant-outline',
+  'food-beverages': 'restaurant-outline',
+  'coffee-cafes': 'cafe-outline',
+  'grooming-for-men': 'cut-outline',
+  'beauty-for-women': 'flower-outline',
+  'spa': 'color-wand-outline',
+  'health-wellness': 'heart-outline',
+  'fitness-gym': 'barbell-outline',
+  'it-software': 'laptop-outline',
+  'electronics': 'hardware-chip-outline',
+  'retail': 'bag-handle-outline',
+  'fashion-clothing': 'shirt-outline',
+  'home-services': 'home-outline',
+  'cleaning-services': 'sparkles-outline',
+  'automotive': 'car-outline',
+  'education': 'school-outline',
+  'travel-tourism': 'airplane-outline',
+  'real-estate': 'business-outline',
+  'finance': 'card-outline',
+  'legal-services': 'briefcase-outline',
   'events-entertainment': 'musical-notes-outline',
-  'photography':          'camera-outline',
-  'food-delivery':        'bicycle-outline',
-  'groceries':            'cart-outline',
-  'medical':              'medkit-outline',
-  'pharmacy':             'medical-outline',
-  'construction':         'construct-outline',
-  'logistics':            'cube-outline',
+  'photography': 'camera-outline',
+  'food-delivery': 'bicycle-outline',
+  'groceries': 'cart-outline',
+  'medical': 'medkit-outline',
+  'pharmacy': 'medical-outline',
+  'construction': 'construct-outline',
+  'logistics': 'cube-outline',
 };
 
 // Gradient palette (cycles through for each card)
@@ -158,18 +159,28 @@ export default function CategoriesScreen() {
       {/* ── Grid ── */}
       {isLoading ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={C.primary} />
+          <ActivityIndicator size="large" color={THEME.primary} />
           <Text style={[styles.loadingText, { color: C.textSecondary }]}>
             Loading categories...
           </Text>
         </View>
       ) : (
+        // <FlatList
+        //   data={categories ?? []}
+        //   keyExtractor={(item) => String(item.id)}
+        //   numColumns={2}
+        //   contentContainerStyle={styles.grid}
+        //   columnWrapperStyle={styles.row}
+        //   showsVerticalScrollIndicator={false}
+        //   renderItem={({ item, index }) => (
+        //     <CategoryGridCard category={item} index={index} />
+        //   )}
         <FlatList
           data={categories ?? []}
           keyExtractor={(item) => String(item.id)}
-          numColumns={2}
+          numColumns={1} // <--- Change this from 2 to 1
           contentContainerStyle={styles.grid}
-          columnWrapperStyle={styles.row}
+          // columnWrapperStyle={styles.row} // <--- Remove or Comment this out (not used for 1 column)
           showsVerticalScrollIndicator={false}
           renderItem={({ item, index }) => (
             <CategoryGridCard category={item} index={index} />
@@ -236,8 +247,8 @@ const styles = StyleSheet.create({
   // Card
   card: {
     width: CARD_WIDTH,
-    height: 180,
-    borderRadius: 24,
+    height: 250,
+    borderRadius: 20,
     overflow: 'hidden',
     backgroundColor: '#F3F4F6',
     shadowColor: '#000',
@@ -245,6 +256,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 10,
     elevation: 5,
+    marginBottom: 16
   },
   cardImage: {
     flex: 1,
@@ -298,7 +310,7 @@ const styles = StyleSheet.create({
   // Text
   cardTitle: {
     color: '#FFF',
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: '800',
     lineHeight: 20,
     marginBottom: 4,
@@ -315,7 +327,7 @@ const styles = StyleSheet.create({
   },
   countText: {
     color: 'rgba(255,255,255,0.9)',
-    fontSize: 10,
+    fontSize: 12,
     fontWeight: '600',
   },
 

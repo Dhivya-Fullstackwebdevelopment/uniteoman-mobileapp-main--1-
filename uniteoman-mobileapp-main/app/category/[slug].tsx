@@ -36,13 +36,13 @@ const FALLBACK_HERO = 'https://images.unsplash.com/photo-1556761175-5973dc0f32d7
 
 // ── Category accent color map ─────────────────────────────────────────────────
 const CATEGORY_ACCENT: Record<string, { color: string; bg: string; icon: string }> = {
-  'spa':             { color: '#A855F7', bg: '#FAF5FF', icon: 'flower-outline' },
-  'cleaning':        { color: '#0EA5E9', bg: '#E0F2FE', icon: 'sparkles-outline' },
-  'it-software':     { color: '#6366F1', bg: '#EEF2FF', icon: 'code-slash-outline' },
-  'grooming-for-men':{ color: '#F59E0B', bg: '#FFFBEB', icon: 'cut-outline' },
-  'retail':          { color: '#EC4899', bg: '#FDF2F8', icon: 'bag-outline' },
-  'car-rental':      { color: '#10B981', bg: '#ECFDF5', icon: 'car-outline' },
-  'photography':     { color: '#EF4444', bg: '#FEF2F2', icon: 'camera-outline' },
+  'spa': { color: '#A855F7', bg: '#FAF5FF', icon: 'flower-outline' },
+  'cleaning': { color: '#0EA5E9', bg: '#E0F2FE', icon: 'sparkles-outline' },
+  'it-software': { color: '#6366F1', bg: '#EEF2FF', icon: 'code-slash-outline' },
+  'grooming-for-men': { color: '#F59E0B', bg: '#FFFBEB', icon: 'cut-outline' },
+  'retail': { color: '#EC4899', bg: '#FDF2F8', icon: 'bag-outline' },
+  'car-rental': { color: '#10B981', bg: '#ECFDF5', icon: 'car-outline' },
+  'photography': { color: '#EF4444', bg: '#FEF2F2', icon: 'camera-outline' },
 };
 
 const FALLBACK_ACCENT = { color: '#4338CA', bg: '#EEF2FF', icon: 'grid-outline' };
@@ -144,9 +144,9 @@ function LoadingShelf() {
 type SortKey = 'rating' | 'newest' | 'popular';
 
 const SORT_OPTIONS: { key: SortKey; label: string; icon: string }[] = [
-  { key: 'rating',   label: 'Top Rated', icon: 'star' },
-  { key: 'newest',   label: 'Newest',    icon: 'time-outline' },
-  { key: 'popular',  label: 'Popular',   icon: 'flame-outline' },
+  { key: 'rating', label: 'Top Rated', icon: 'star' },
+  { key: 'newest', label: 'Newest', icon: 'time-outline' },
+  { key: 'popular', label: 'Popular', icon: 'flame-outline' },
 ];
 
 export default function CategoryScreen() {
@@ -336,7 +336,7 @@ export default function CategoryScreen() {
                 onPress={goExplore}
                 activeOpacity={0.8}
               >
-                <View style={[styles.exploreAllIcon, { backgroundColor: THEME.primary }]}>
+                <View style={[styles.exploreAllIcon, { backgroundColor: accent.bg }]}>
                   <Ionicons name="grid-outline" size={18} color={accent.color} />
                 </View>
                 <Text style={[styles.exploreAllText, { color: C.text }]}>
