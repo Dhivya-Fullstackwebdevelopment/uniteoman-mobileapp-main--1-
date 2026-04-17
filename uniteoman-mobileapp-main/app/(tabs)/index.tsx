@@ -22,9 +22,10 @@ import { BusinessCard as BusinessCardType } from '../../types';
 import { useSidebarStore } from '../../store/sidebarStore';
 import ShelfCard from '../../components/ShelfCard';
 
-const THEME_PINK = '#E91E63';
-const THEME_PINK_LIGHT = '#FCE4EC';
-const THEME_PINK_GRADIENT = ['#FF4081', '#E91E63'] as const;
+const THEME_PINK = '#9660BF';
+const THEME_PINK_LIGHT = '#F3E5F5';
+const THEME_PINK_GRADIENT = ['#FF4081', '#7C4DFF'] as const;
+
 
 const CATEGORY_ICON_MAP: Record<string, keyof typeof Ionicons.glyphMap> = {
   'restaurants-cafes': 'restaurant-outline',
@@ -267,35 +268,31 @@ export default function HomeScreen() {
                 <Ionicons name="chevron-forward" size={13} color={THEME_PINK} />
               </TouchableOpacity>
             </View>
-            <FlatList
-              data={categories.filter((c) => c.is_featured).slice(0, 12)}
-              numColumns={4}
-              showsVerticalScrollIndicator={false}
-              columnWrapperStyle={{
-                justifyContent: 'space-between',
-                paddingHorizontal: 16,
-              }}
-              contentContainerStyle={{
-                paddingTop: 10,
-                gap: 16,
-              }}
-              renderItem={({ item }) => {
-                const color = getCategoryColor(item.slug);
-                return (
-                  <TouchableOpacity
-                    style={styles.catItem}
-                    onPress={() => router.push(`/category/${item.slug}`)}
-                  >
-                    <View style={[styles.catCircle, { backgroundColor: `${color}15` }]}>
-                      <Ionicons name={getCategoryIcon(item.slug)} size={22} color={color} />
-                    </View>
-                    <Text style={styles.catName} numberOfLines={2}>
-                      {item.name_en}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              }}
-            />
+
+            <View style={styles.catGrid}>
+              {categories
+                .filter((c) => c.is_featured)
+                .slice(0, 12)
+                .map((item) => {
+                  const color = getCategoryColor(item.slug);
+
+                  return (
+                    <TouchableOpacity
+                      key={item.slug}
+                      style={styles.catItem}
+                      onPress={() => router.push(`/category/${item.slug}`)}
+                    >
+                      <View style={[styles.catCircle, { backgroundColor: `${color}15` }]}>
+                        <Ionicons name={getCategoryIcon(item.slug)} size={22} color={color} />
+                      </View>
+
+                      <Text style={styles.catName} numberOfLines={2}>
+                        {item.name_en}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+            </View>
           </View>
         )}
 
@@ -403,7 +400,10 @@ const styles = StyleSheet.create({
   cardList: { paddingHorizontal: 16 },
   roundGrid: { paddingHorizontal: 16, gap: 24 },
   roundRow: { flexDirection: 'row', justifyContent: 'space-between' },
-  catItem: { alignItems: 'center', flex: 1, },
+  catItem: {
+    width: '30%',
+    alignItems: 'center',
+  },
   catCircle: { width: 56, height: 56, borderRadius: 20, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
   catName: { fontSize: 11, fontWeight: '600', textAlign: 'center', color: '#444' },
   fab: {
@@ -421,4 +421,11 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
   },
   fabGradient: { width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' },
+  catGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
+    gap: 16,
+  },
 });

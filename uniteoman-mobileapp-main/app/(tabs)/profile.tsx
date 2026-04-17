@@ -168,13 +168,13 @@ function GuestProfile() {
           style={[guestSt.btnWrap, { flex: 1.4, borderRadius: 14, overflow: 'hidden' }]}
           onPress={() => router.push('/(auth)/login')}
         >
-          <LinearGradient colors={THEME.darkGradient} style={guestSt.signInBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+          <LinearGradient colors={THEME.gradient} style={guestSt.signInBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
             <Text style={guestSt.signInText}>Sign In</Text>
             <Ionicons name="arrow-forward" size={16} color="#FFF" />
           </LinearGradient>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[guestSt.createBtn, { flex: 1, borderColor: THEME.darkcolor }]}
+          style={[guestSt.createBtn, { flex: 1, borderColor: THEME.primary }]}
           onPress={() => router.push('/(auth)/register')}
         >
           <Text style={[guestSt.createText, { color: THEME.darkcolor }]}>Register</Text>

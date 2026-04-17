@@ -1,8 +1,12 @@
 import { Stack } from 'expo-router';
 import { Colors } from '../../constants/Colors';
+import React from 'react';
+import Toast from 'react-native-toast-message';
+
 
 export default function VendorLayout() {
   return (
+    <>
     <Stack screenOptions={{
       headerStyle: { backgroundColor: Colors.background },
       headerTintColor: Colors.text,
@@ -18,5 +22,8 @@ export default function VendorLayout() {
       <Stack.Screen name="reviews" options={{ title: 'Reviews' }} />
       <Stack.Screen name="settings" options={{ title: 'Settings' }} />
     </Stack>
+     <Toast /> 
+         </>
+
   );
 }

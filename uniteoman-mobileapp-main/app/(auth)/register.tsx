@@ -24,6 +24,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/authStore';
 import { catalogApi, commonApi } from '../../lib/apiClient';
 import { Colors, Gradients } from '../../constants/Colors';
+import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 
 const C = Colors;
 
@@ -55,12 +56,12 @@ function Field({
       <View style={[
         fs.box,
         {
-          borderColor: focused ? C.primary : C.border,
+          borderColor: focused ? THEME.primary : C.border,
           backgroundColor: focused ? '#FAFBFF' : C.divider,
         },
       ]}>
         <View style={[fs.iconWrap, { backgroundColor: focused ? C.primaryBg : 'transparent' }]}>
-          <Ionicons name={icon} size={17} color={focused ? C.primary : C.textMuted} />
+          <Ionicons name={icon} size={17} color={focused ? THEME.primary : C.textMuted} />
         </View>
         <TextInput
           ref={inputRef}
@@ -82,6 +83,7 @@ function Field({
     </View>
   );
 }
+
 const fs = StyleSheet.create({
   wrap: { marginBottom: 14 },
   label: { fontSize: 11, fontWeight: '700', marginBottom: 7, letterSpacing: 0.4, textTransform: 'uppercase' },
@@ -90,7 +92,7 @@ const fs = StyleSheet.create({
     borderWidth: 1.5, borderRadius: 14,
     paddingHorizontal: 4, paddingVertical: Platform.OS === 'ios' ? 2 : 0,
   },
-  iconWrap: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  iconWrap: { width: 38, height: 38, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
   input: { flex: 1, fontSize: 14, fontWeight: '500', paddingVertical: 10 },
 });
 
@@ -236,7 +238,7 @@ const pm = StyleSheet.create({
     borderTopLeftRadius: 26, borderTopRightRadius: 26,
     paddingHorizontal: 20, paddingBottom: 40, maxHeight: '70%',
   },
-  handle: { width: 40, height: 4, borderRadius: 2, backgroundColor: '#D1D5DB', alignSelf: 'center', marginTop: 12, marginBottom: 16 },
+  handle: { width: 40, height: 4, borderRadius: 4, backgroundColor: '#D1D5DB', alignSelf: 'center', marginTop: 12, marginBottom: 16 },
   title: { fontSize: 17, fontWeight: '800', marginBottom: 12 },
   row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 14 },
   rowText: { fontSize: 15, fontWeight: '500' },
@@ -245,39 +247,39 @@ const pm = StyleSheet.create({
 
 // ══════════════════════════════════════════════════════════════════════════════
 const STEPS = [
-  { id: 1, label: 'Account',  icon: 'person-outline' as const },
+  { id: 1, label: 'Account', icon: 'person-outline' as const },
   { id: 2, label: 'Business', icon: 'business-outline' as const },
-  { id: 3, label: 'Docs',     icon: 'document-text-outline' as const },
+  { id: 3, label: 'Docs', icon: 'document-text-outline' as const },
 ];
 
 export default function RegisterScreen() {
   const [step, setStep] = useState(1);
-  const [done, setDone]   = useState(false);    // success state
+  const [done, setDone] = useState(false);    // success state
 
   // Step 1 — account
-  const [fullName, setFullName]         = useState('');
-  const [email, setEmail]               = useState('');
-  const [password, setPassword]         = useState('');
-  const [confirmPw, setConfirmPw]       = useState('');
-  const [showPw, setShowPw]             = useState(false);
-  const [showConfirm, setShowConfirm]   = useState(false);
+  const [fullName, setFullName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPw, setConfirmPw] = useState('');
+  const [showPw, setShowPw] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   // Step 2 — business
-  const [bizName, setBizName]           = useState('');
-  const [phone, setPhone]               = useState('');
-  const [address, setAddress]           = useState('');
-  const [catId, setCatId]               = useState<number | null>(null);
-  const [catLabel, setCatLabel]         = useState('');
-  const [govId, setGovId]               = useState<number | null>(null);
-  const [govLabel, setGovLabel]         = useState('');
+  const [bizName, setBizName] = useState('');
+  const [phone, setPhone] = useState('');
+  const [address, setAddress] = useState('');
+  const [catId, setCatId] = useState<number | null>(null);
+  const [catLabel, setCatLabel] = useState('');
+  const [govId, setGovId] = useState<number | null>(null);
+  const [govLabel, setGovLabel] = useState('');
   const [showCatPicker, setShowCatPicker] = useState(false);
   const [showGovPicker, setShowGovPicker] = useState(false);
 
   // Step 3 — documents
-  const [idProofUri, setIdProofUri]         = useState('');
-  const [ownerPhotoUri, setOwnerPhotoUri]   = useState('');
-  const [tradeUri, setTradeUri]             = useState('');
-  const [uploadingId, setUploadingId]       = useState(false);
+  const [idProofUri, setIdProofUri] = useState('');
+  const [ownerPhotoUri, setOwnerPhotoUri] = useState('');
+  const [tradeUri, setTradeUri] = useState('');
+  const [uploadingId, setUploadingId] = useState(false);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
   const [uploadingTrade, setUploadingTrade] = useState(false);
 
@@ -381,15 +383,15 @@ export default function RegisterScreen() {
   const StepBar = () => (
     <View style={styles.stepBar}>
       {STEPS.map((s, i) => {
-        const done_  = step > s.id;
+        const done_ = step > s.id;
         const active = step === s.id;
         return (
           <React.Fragment key={s.id}>
             <View style={styles.stepItem}>
               <View style={[
                 styles.stepCircle,
-                done_  && { backgroundColor: C.success },
-                active && { backgroundColor: C.primary },
+                done_ && { backgroundColor: C.success },
+                active && { backgroundColor: THEME.pinkLight },
                 !done_ && !active && { backgroundColor: C.divider },
               ]}>
                 {done_ ? (
@@ -400,7 +402,7 @@ export default function RegisterScreen() {
               </View>
               <Text style={[
                 styles.stepLabel,
-                { color: active ? C.primary : done_ ? C.success : C.textMuted },
+                { color: active ? THEME.grayLight : done_ ? C.success : C.textMuted },
               ]}>
                 {s.label}
               </Text>
@@ -480,7 +482,7 @@ export default function RegisterScreen() {
         >
           {/* ── Hero ──────────────────────────────────────────────────── */}
           <LinearGradient
-            colors={['#3730A3', '#4338CA', '#6366F1']}
+            colors={THEME.gradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.hero}
@@ -677,7 +679,7 @@ export default function RegisterScreen() {
                 activeOpacity={0.88}
               >
                 <LinearGradient
-                  colors={Gradients.primary}
+                  colors={THEME.gradient}
                   style={styles.ctaGrad}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}

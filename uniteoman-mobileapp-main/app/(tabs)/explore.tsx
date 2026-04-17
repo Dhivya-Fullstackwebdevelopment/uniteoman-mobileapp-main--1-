@@ -349,7 +349,7 @@ export default function ExploreScreen() {
                 <TouchableOpacity
                   style={[
                     styles.pageBtn,
-                    { backgroundColor: page > 1 ? C.primary : C.border },
+                    { backgroundColor: page > 1 ? THEME.primary : C.border },
                     { opacity: page > 1 ? 1 : 0.4 },
                   ]}
                   disabled={page <= 1}
@@ -365,7 +365,7 @@ export default function ExploreScreen() {
                 <TouchableOpacity
                   style={[
                     styles.pageBtn,
-                    { backgroundColor: page < data.pages ? C.primary : C.border },
+                    { backgroundColor: page < data.pages ? THEME.primary : C.border },
                     { opacity: page < data.pages ? 1 : 0.4 },
                   ]}
                   disabled={page >= data.pages}

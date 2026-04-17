@@ -95,7 +95,7 @@ function GuestEmpty() {
         Sign in to bookmark salons, restaurants, and services you love.
       </Text>
       <TouchableOpacity style={styles.ctaWrap} onPress={() => router.push('/(auth)/login')}>
-        <LinearGradient colors={THEME.darkGradient}  style={styles.ctaBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
+        <LinearGradient colors={THEME.gradient}  style={styles.ctaBtn} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}>
           <Text style={styles.ctaText}>Sign In</Text>
           <Ionicons name="arrow-forward" size={15} color="#FFF" />
         </LinearGradient>

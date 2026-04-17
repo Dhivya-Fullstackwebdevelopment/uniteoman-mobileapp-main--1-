@@ -96,11 +96,16 @@ export default function LoginScreen() {
     }
   };
 
-  const PINK = '#E91E63';
-  const PINK_LIGHT = '#FCE4EC';
-  const heroColors: [string, string, string] = isVendorMode
-    ? ['#AD1457', '#C2185B', '#E91E63']   // darker pink
-    : ['#FF4081', '#E91E63', '#F06292']; // main pink
+  //const PINK = '#E91E63';
+  const PINK = '#9660BF';
+
+  //const PINK_LIGHT = '#FCE4EC';
+  const PINK_LIGHT = '#F3E5F5';
+
+  // Hero gradient (updated to pink → purple flow)
+  const heroColors: [string, string] = isVendorMode
+    ? ['#FF4081', '#7C4DFF']   // deep purple → pink (vendor mode)
+    : ['#7C4DFF', '#FF4081']; // pink → purple (main theme)
 
   return (
     <View style={{ flex: 1, backgroundColor: '#E91E63' }}>

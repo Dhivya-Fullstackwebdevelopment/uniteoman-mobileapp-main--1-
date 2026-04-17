@@ -31,10 +31,17 @@
         {
           "faceIDPermission": "Allow Unite Oman to access your Face ID biometric data."
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "b9c53f88-1175-4c8b-9fd8-7c6238e3015c"
+      }
     }
   }
 }

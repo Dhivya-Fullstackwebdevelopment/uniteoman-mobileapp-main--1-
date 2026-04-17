@@ -27,6 +27,7 @@ import { API_BASE_URL } from '../../constants/api';
 import { BookingCreate, ServiceOut } from '../../types';
 import { useFavoritesStore } from '../../store/favoritesStore';
 import { THEME } from '@/components/Reuse.tsx/Reusecolor';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HERO_HEIGHT = 300;
@@ -197,6 +198,7 @@ export default function BusinessDetailScreen() {
   const [showAllHours, setShowAllHours] = useState(false);
   const [showFullDesc, setShowFullDesc] = useState(false);
   const { isFavorite, toggleFavorite } = useFavoritesStore();
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const { data: business, isLoading, error } = useQuery({
     queryKey: ['business', slug],
@@ -246,6 +248,11 @@ export default function BusinessDetailScreen() {
       return;
     }
     bookingMutation.mutate({
+      ...bookingForm,
+      service: selectedService?.name || bookingForm.service,
+      business_id: business!.id,
+    });
+    console.log("Sending Booking Payload 🚀", {
       ...bookingForm,
       service: selectedService?.name || bookingForm.service,
       business_id: business!.id,
@@ -1207,13 +1214,42 @@ export default function BusinessDetailScreen() {
                 onChange={(v) => setBookingForm((p) => ({ ...p, phone: v }))}
                 keyboardType="phone-pad"
               />
-              <InputField
+              {/* <InputField
                 icon="calendar-outline"
                 label="Preferred Date"
                 placeholder="YYYY-MM-DD"
                 value={bookingForm.date}
                 onChange={(v) => setBookingForm((p) => ({ ...p, date: v }))}
-              />
+              /> */}
+              <TouchableOpacity onPress={() => setShowDatePicker(true)} activeOpacity={0.8}>
+                <View pointerEvents="none">
+                  <InputField
+                    icon="calendar-outline"
+                    label="Preferred Date"
+                    value={bookingForm.date}
+                    onChange={(v) => setBookingForm((p) => ({ ...p, date: v }))}
+                    placeholder="Select Date"
+                  />
+                </View>
+              </TouchableOpacity>
+              {showDatePicker && (
+                <DateTimePicker
+                  value={bookingForm.date ? new Date(bookingForm.date) : new Date()}
+                  mode="date"
+                  display="default"
+                  onChange={(event, selectedDate) => {
+                    setShowDatePicker(false);
+
+                    if (selectedDate) {
+                      const formatted = selectedDate.toISOString().split('T')[0];
+                      setBookingForm((prev) => ({
+                        ...prev,
+                        date: formatted,
+                      }));
+                    }
+                  }}
+                />
+              )}
               <InputField
                 icon="time-outline"
                 label="Preferred Time"

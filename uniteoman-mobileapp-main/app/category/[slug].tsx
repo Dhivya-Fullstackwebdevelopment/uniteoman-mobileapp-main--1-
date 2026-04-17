@@ -275,7 +275,7 @@ export default function CategoryScreen() {
             />
             {topLoading ? (
               <LoadingShelf />
-            ) : topRated?.items && topRated.items.length > 0 ? (
+             ) : topRated?.items && topRated.items.length > 0 ? (
               <FlatList
                 data={topRated.items}
                 horizontal
@@ -286,6 +286,7 @@ export default function CategoryScreen() {
                 decelerationRate="fast"
                 renderItem={({ item }) => <ShelfCard business={item} />}
               />
+             
             ) : (
               <View style={styles.emptyShelf}>
                 <Ionicons name="star-outline" size={28} color={C.textMuted} />

@@ -361,6 +361,7 @@ import { Colors, Gradients } from '../constants/Colors';
 import { BusinessCard as BusinessCardType } from '../types';
 import StarRating from './StarRating';
 import { API_BASE_URL } from '../constants/api';
+import { THEME } from './Reuse.tsx/Reusecolor';
 
 interface Props {
   business: BusinessCardType;
@@ -434,15 +435,22 @@ export default function BusinessCard({ business, onPress, onBook, horizontal = f
             </Text>
           </View>
           <View style={[styles.divider, { backgroundColor: C.border }]} />
-          <TouchableOpacity
-            style={styles.bookBtn}
-            onPress={onBook ?? onPress}
-            activeOpacity={0.85}
+          <LinearGradient
+            colors={THEME.gradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={{ borderRadius: 10 }}
           >
-            <Text style={styles.bookBtnText}>View & Book</Text>
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.bookBtn}
+              onPress={onBook ?? onPress}
+              activeOpacity={0.85}
+            >
+              <Text style={styles.bookBtnText}>View & Book</Text>
+            </TouchableOpacity>
+          </LinearGradient>
         </View>
-      </TouchableOpacity>
+      </TouchableOpacity >
     );
   }
 
@@ -527,13 +535,20 @@ export default function BusinessCard({ business, onPress, onBook, horizontal = f
         <View style={[styles.divider, { backgroundColor: C.border }]} />
 
         {/* Full-width View & Book button */}
-        <TouchableOpacity
-          style={styles.bookBtn}
-          onPress={onBook ?? onPress}
-          activeOpacity={0.85}
+        <LinearGradient
+          colors={THEME.gradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={{ borderRadius: 10 }}
         >
-          <Text style={styles.bookBtnText}>View & Book</Text>
-        </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.bookBtn}
+            onPress={onBook ?? onPress}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.bookBtnText}>View & Book</Text>
+          </TouchableOpacity>
+        </LinearGradient>
       </View>
     </TouchableOpacity>
   );
@@ -627,7 +642,7 @@ const styles = StyleSheet.create({
   },
 
   bookBtn: {
-    backgroundColor: '#111827',
+    //backgroundColor: '#111827',
     borderRadius: 10,
     paddingVertical: 13,
     alignItems: 'center',
