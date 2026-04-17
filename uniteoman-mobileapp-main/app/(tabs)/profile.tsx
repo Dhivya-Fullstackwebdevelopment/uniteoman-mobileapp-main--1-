@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet,
   ScrollView, Alert, StatusBar, Dimensions,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
@@ -13,6 +14,7 @@ import { useAuthStore } from '../../store/authStore';
 import { useFavoritesStore } from '../../store/favoritesStore';
 import { Colors, Gradients } from '../../constants/Colors';
 import { THEME } from '@/components/Reuse.tsx/Reusecolor';
+import Toast from 'react-native-toast-message';
 
 const C = Colors;
 const { width: W } = Dimensions.get('window');
@@ -223,6 +225,8 @@ export default function ProfileScreen() {
   const { user, isAuthenticated, logout } = useAuthStore();
   const { favorites } = useFavoritesStore();
   const isVendor = user?.role === 'vendor';
+  const [showSignOutModal, setShowSignOutModal] = useState(false);
+
 
   const { data: stats } = useQuery({
     queryKey: ['vendor-stats'],
@@ -233,14 +237,24 @@ export default function ProfileScreen() {
   const initials = getInitials(user?.email);
   const displayName = getDisplayName(user?.email);
 
-  const handleLogout = () => {
-    Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Sign Out', style: 'destructive',
-        onPress: async () => { await logout(); router.replace('/(auth)/login'); },
-      },
-    ]);
+  // const handleLogout = () => {
+  //   Alert.alert('Sign Out', 'Are you sure you want to sign out?', [
+  //     { text: 'Cancel', style: 'cancel' },
+  //     {
+  //       text: 'Sign Out', style: 'destructive',
+  //       onPress: async () => { await logout(); router.replace('/(auth)/login'); },
+  //     },
+  //   ]);
+  // };
+
+  const handleSignOutPress = () => {
+    setShowSignOutModal(true);
+  };
+
+  const handleConfirmSignOut = async () => {
+    setShowSignOutModal(false);
+    await logout();
+    router.replace('/(auth)/login');
   };
 
   if (!isAuthenticated) return <GuestProfile />;
@@ -364,11 +378,69 @@ export default function ProfileScreen() {
 
         {/* ── Sign out ─────────────────────────────────────────────── */}
         <Section title="">
-          <MenuItem icon="log-out-outline" label="Sign Out" onPress={handleLogout} danger last />
+          <MenuItem icon="log-out-outline" label="Sign Out" onPress={handleSignOutPress} danger last />
         </Section>
 
         <Text style={[styles.version, { color: C.textMuted }]}>UniteOman v1.0.0</Text>
       </ScrollView>
+      {/* Sign Out Confirmation Modal */}
+      <Modal
+        visible={showSignOutModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+      >
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalContainer, { backgroundColor: C.card }]}>
+            {/* Modal Handle */}
+            <View style={[styles.modalHandle, { backgroundColor: C.border }]} />
+
+            {/* Icon */}
+            <View style={styles.modalIconContainer}>
+              <LinearGradient
+                colors={['#FEE2E2', '#FFE4E6']}
+                style={styles.modalIconGradient}
+              >
+                <Ionicons name="log-out-outline" size={40} color={C.error} />
+              </LinearGradient>
+            </View>
+
+            {/* Title */}
+            <Text style={[styles.modalTitle, { color: C.text }]}>Sign Out</Text>
+
+            {/* Message */}
+            <Text style={[styles.modalMessage, { color: C.textSecondary }]}>
+              Are you sure you want to sign out? You'll need to sign in again to access your account.
+            </Text>
+
+            {/* Buttons */}
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalCancelButton, { borderColor: C.border }]}
+                onPress={() => setShowSignOutModal(false)}
+              >
+                <Text style={[styles.modalCancelText, { color: C.textSecondary }]}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.modalButton, styles.modalConfirmButton]}
+                onPress={handleConfirmSignOut}
+              >
+                <LinearGradient
+                  colors={['#EF4444', '#DC2626']}
+                  style={styles.modalConfirmGradient}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                >
+                  <Ionicons name="log-out-outline" size={18} color="#FFF" />
+                  <Text style={styles.modalConfirmText}>Sign Out</Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+      <Toast />
     </SafeAreaView>
   );
 }
@@ -424,4 +496,88 @@ const styles = StyleSheet.create({
   statDiv: { width: 1, backgroundColor: 'rgba(255,255,255,0.2)', marginVertical: 4 },
 
   version: { textAlign: 'center', fontSize: 12, marginTop: 24, fontWeight: '500' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalContainer: {
+    width: W - 48,
+    borderRadius: 24,
+    padding: 24,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 8,
+  },
+  modalHandle: {
+    width: 40,
+    height: 4,
+    borderRadius: 2,
+    position: 'absolute',
+    top: 12,
+    alignSelf: 'center',
+  },
+  modalIconContainer: {
+    marginBottom: 16,
+    marginTop: 8,
+  },
+  modalIconGradient: {
+    width: 72,
+    height: 72,
+    borderRadius: 36,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: '800',
+    marginBottom: 8,
+    letterSpacing: -0.3,
+  },
+  modalMessage: {
+    fontSize: 14,
+    textAlign: 'center',
+    lineHeight: 20,
+    marginBottom: 24,
+    paddingHorizontal: 8,
+  },
+  modalButtons: {
+    flexDirection: 'row',
+    gap: 12,
+    width: '100%',
+  },
+  modalButton: {
+    flex: 1,
+    borderRadius: 14,
+    overflow: 'hidden',
+    height: 52,
+  },
+  modalCancelButton: {
+    borderWidth: 1.5,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalCancelText: {
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  modalConfirmButton: {
+    overflow: 'hidden',
+  },
+  modalConfirmGradient: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  modalConfirmText: {
+    color: '#FFF',
+    fontSize: 15,
+    fontWeight: '700',
+  },
 });

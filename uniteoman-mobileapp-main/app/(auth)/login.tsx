@@ -21,6 +21,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAuthStore } from '../../store/authStore';
 import { Colors, Gradients } from '../../constants/Colors';
 import { THEME } from '@/components/Reuse.tsx/Reusecolor';
+import { z } from 'zod';
+import Toast from 'react-native-toast-message';
 
 const { width: W, height: H } = Dimensions.get('window');
 
@@ -71,7 +73,15 @@ const pill = StyleSheet.create({
   text: { color: '#FFF', fontSize: 11, fontWeight: '600' },
 });
 
-// ══════════════════════════════════════════════════════════════════════════════
+const loginSchema = z.object({
+  email: z.string()
+    .min(1, 'Email is required')
+    .email('Please enter a valid email address'),
+  password: z.string()
+    .min(1, 'Password is required')
+    .min(6, 'Password must be at least 6 characters'),
+});
+
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -81,18 +91,53 @@ export default function LoginScreen() {
   const passwordRef = useRef<TextInput>(null);
   const { login, isLoading } = useAuthStore();
   const C = Colors;
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+
 
   const handleLogin = async () => {
-    const trimmedEmail = email.trim().toLowerCase();
-    if (!trimmedEmail) { Alert.alert('Missing Info', 'Please enter your email address.'); return; }
-    if (!password) { Alert.alert('Missing Info', 'Please enter your password.'); return; }
+  
+    setErrors({});
+
+    const result = loginSchema.safeParse({ email: email.trim().toLowerCase(), password });
+
+    if (!result.success) {
+      const fieldErrors: { email?: string; password?: string } = {};
+      result.error.issues.forEach((err) => {
+        if (err.path[0] === 'email') fieldErrors.email = err.message;
+        if (err.path[0] === 'password') fieldErrors.password = err.message;
+      });
+      setErrors(fieldErrors);
+
+      const firstError = result.error.issues[0];
+      Toast.show({
+        type: 'error',
+        text1: 'Validation Error',
+        text2: firstError.message,
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
+
     try {
-      await login(trimmedEmail, password);
+      await login(result.data.email, result.data.password);
+      Toast.show({
+        type: 'success',
+        text1: 'Welcome Back! 🎉',
+        text2: isVendorMode ? 'Vendor portal loading...' : 'Redirecting to dashboard...',
+        position: 'top',
+        visibilityTime: 2000,
+      });
       router.replace('/(tabs)');
     } catch (err: any) {
-      const msg =
-        err?.response?.data?.detail || err?.message || 'Invalid credentials. Please try again.';
-      Alert.alert('Login Failed', msg);
+      const errorMsg = err?.response?.data?.detail || err?.message || 'Invalid credentials. Please try again.';
+      Toast.show({
+        type: 'error',
+        text1: 'Login Failed ❌',
+        text2: errorMsg,
+        position: 'top',
+        visibilityTime: 4000,
+      });
     }
   };
 
@@ -267,7 +312,7 @@ export default function LoginScreen() {
               <View style={[
                 styles.fieldBox,
                 {
-                  borderColor: focusedField === 'email' ? THEME.darkcolor : '#E0E0E0',
+                  borderColor: errors.email ? '#EF4444' : (focusedField === 'email' ? THEME.darkcolor : '#E0E0E0'),
                   backgroundColor: focusedField === 'email' ? '#FAFBFF' : C.divider,
                 },
               ]}>
@@ -278,7 +323,7 @@ export default function LoginScreen() {
                   <Ionicons
                     name="mail-outline"
                     size={16}
-                    color={focusedField === 'email' ? THEME.darkcolor : '#E0E0E0'}
+                    color={errors.email ? '#EF4444' : (focusedField === 'email' ? THEME.darkcolor : '#E0E0E0')}
                   />
                 </View>
                 <TextInput
@@ -286,7 +331,10 @@ export default function LoginScreen() {
                   placeholder="you@example.com"
                   placeholderTextColor={C.textMuted}
                   value={email}
-                  onChangeText={setEmail}
+                  onChangeText={(text) => {
+                    setEmail(text);
+                    if (errors.email) setErrors(prev => ({ ...prev, email: undefined }));
+                  }}
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoComplete="email"
@@ -301,20 +349,29 @@ export default function LoginScreen() {
                   </TouchableOpacity>
                 )}
               </View>
+              {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
             </View>
 
+            {/* Password field */}
             {/* Password field */}
             <View style={styles.fieldGroup}>
               <View style={styles.fieldLabelRow}>
                 <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>Password</Text>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => {
+                  Toast.show({
+                    type: 'info',
+                    text1: 'Reset Password',
+                    text2: 'Please contact support to reset your password.',
+                    position: 'top',
+                  });
+                }}>
                   <Text style={[styles.forgotText, { color: THEME.darkcolor }]}>Forgot?</Text>
                 </TouchableOpacity>
               </View>
               <View style={[
                 styles.fieldBox,
                 {
-                  borderColor: focusedField === 'password' ? THEME.darkcolor : C.border,
+                  borderColor: errors.password ? '#EF4444' : (focusedField === 'password' ? THEME.darkcolor : C.border),
                   backgroundColor: focusedField === 'password' ? '#FAFBFF' : C.divider,
                 },
               ]}>
@@ -325,7 +382,7 @@ export default function LoginScreen() {
                   <Ionicons
                     name="lock-closed-outline"
                     size={16}
-                    color={focusedField === 'password' ? THEME.darkcolor : '#E0E0E0'}
+                    color={errors.password ? '#EF4444' : (focusedField === 'password' ? THEME.darkcolor : '#E0E0E0')}
                   />
                 </View>
                 <TextInput
@@ -334,7 +391,10 @@ export default function LoginScreen() {
                   placeholder="Enter your password"
                   placeholderTextColor={C.textMuted}
                   value={password}
-                  onChangeText={setPassword}
+                  onChangeText={(text) => {
+                    setPassword(text);
+                    if (errors.password) setErrors(prev => ({ ...prev, password: undefined }));
+                  }}
                   secureTextEntry={!showPassword}
                   autoComplete="current-password"
                   returnKeyType="done"
@@ -354,6 +414,7 @@ export default function LoginScreen() {
                   />
                 </TouchableOpacity>
               </View>
+              {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
             </View>
 
             {/* Sign In CTA — Urban Company style bold button */}
@@ -419,6 +480,7 @@ export default function LoginScreen() {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+      <Toast/>
     </View>
   );
 }
@@ -626,5 +688,12 @@ const styles = StyleSheet.create({
   guestText: { fontSize: 13, fontWeight: '500' },
   legal: {
     fontSize: 11, textAlign: 'center', marginTop: 18, lineHeight: 16,
+  },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 11,
+    marginTop: 4,
+    marginLeft: 4,
+    fontWeight: '500',
   },
 });

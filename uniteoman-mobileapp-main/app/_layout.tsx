@@ -7,6 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { useAuthStore } from '../store/authStore';
 import { useFavoritesStore } from '../store/favoritesStore';
 import Sidebar from '../components/Sidebar';
+import Toast from 'react-native-toast-message';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -44,6 +45,7 @@ export default function RootLayout() {
         <Sidebar />
         <StatusBar style="auto" />
       </QueryClientProvider>
+      <Toast />
     </GestureHandlerRootView>
   );
 }

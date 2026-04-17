@@ -13,15 +13,16 @@ import { businessApi, catalogApi, commonApi } from '../../../lib/apiClient';
 import { Colors, Gradients } from '../../../constants/Colors';
 import { API_BASE_URL } from '../../../constants/api';
 import { THEME } from '@/components/Reuse.tsx/Reusecolor';
+import Toast from 'react-native-toast-message';
 
 const DEFAULT_HOURS = {
-  monday:    { open: '09:00', close: '18:00', closed: false },
-  tuesday:   { open: '09:00', close: '18:00', closed: false },
+  monday: { open: '09:00', close: '18:00', closed: false },
+  tuesday: { open: '09:00', close: '18:00', closed: false },
   wednesday: { open: '09:00', close: '18:00', closed: false },
-  thursday:  { open: '09:00', close: '18:00', closed: false },
-  friday:    { open: '09:00', close: '18:00', closed: true  },
-  saturday:  { open: '09:00', close: '18:00', closed: false },
-  sunday:    { open: '09:00', close: '18:00', closed: false },
+  thursday: { open: '09:00', close: '18:00', closed: false },
+  friday: { open: '09:00', close: '18:00', closed: true },
+  saturday: { open: '09:00', close: '18:00', closed: false },
+  sunday: { open: '09:00', close: '18:00', closed: false },
 };
 
 function buildUrl(url?: string) {
@@ -190,18 +191,39 @@ export default function EditShopScreen() {
   const updateMu = useMutation({
     mutationFn: (payload: any) => businessApi.update(id!, payload),
     onSuccess: () => {
-      Alert.alert('✅ Saved!', 'Shop updated successfully.');
+      // Alert.alert('✅ Saved!', 'Shop updated successfully.');
+      Toast.show({
+        type: 'success',
+        text1: 'Saved Successfully ✅',
+        text2: 'Shop updated successfully. Changes are now live.',
+      });
       queryClient.invalidateQueries({ queryKey: ['vendor-shops'] });
       queryClient.invalidateQueries({ queryKey: ['vendor-stats'] });
       if (currentShop?.slug) queryClient.invalidateQueries({ queryKey: ['business', currentShop.slug] });
       router.back();
     },
-    onError: (err: any) => Alert.alert('Error', err?.response?.data?.detail || 'Failed to update shop'),
+    onError: (err: any) => {
+      Toast.show({
+        type: 'error',
+        text1: 'Update Failed ❌',
+        text2: err?.response?.data?.detail || 'Failed to update shop. Please try again.',
+      });
+    },
   });
 
   const pickAndUpload = async (type: 'logo' | 'cover' | 'gallery') => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') return Alert.alert('Permission needed', 'Please allow photo library access.');
+    if (status !== 'granted')
+    // return Alert.alert('Permission needed', 'Please allow photo library access.');
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Permission Needed',
+        text2: 'Please allow photo library access.',
+        position: 'top',
+      });
+      return;
+    }
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ['images'],
       allowsEditing: type !== 'gallery',
@@ -215,13 +237,37 @@ export default function EditShopScreen() {
         if (type === 'logo') setForm(p => ({ ...p, logo_url: res.url }));
         else if (type === 'cover') setForm(p => ({ ...p, cover_image_url: res.url }));
         else setForm(p => ({ ...p, gallery_urls: [...p.gallery_urls, res.url] }));
-      } catch { Alert.alert('Upload Failed', 'Try again.'); }
+        Toast.show({
+          type: 'success',
+          text1: 'Upload Successful',
+          text2: `${type.charAt(0).toUpperCase() + type.slice(1)} uploaded successfully`,
+          position: 'top',
+        });
+      } catch {
+        //Alert.alert('Upload Failed', 'Try again.');
+        Toast.show({
+          type: 'error',
+          text1: 'Upload Failed',
+          text2: 'Please try again.',
+          position: 'top',
+        });
+      }
       finally { setUploadingType(null); }
     }
   };
 
   const handleSave = () => {
-    if (!form.name_en.trim()) return Alert.alert('Required', 'Shop name is required.');
+    if (!form.name_en.trim())
+    //return Alert.alert('Required', 'Shop name is required.');
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Required Field',
+        text2: 'Shop name is required.',
+        position: 'top',
+      });
+      return;
+    }
     const payload: any = { ...form };
     if (form.category_id) payload.category_id = parseInt(form.category_id);
     else delete payload.category_id;
@@ -332,9 +378,9 @@ export default function EditShopScreen() {
                 {form.logo_url
                   ? <Image source={{ uri: buildUrl(form.logo_url) }} style={styles.mediaImg} />
                   : <View style={{ alignItems: 'center', gap: 6 }}>
-                      {uploadingType === 'logo' ? <ActivityIndicator color={C.primary} /> : <Ionicons name="cloud-upload-outline" size={24} color={C.textMuted} />}
-                      <Text style={{ color: C.textMuted, fontSize: 11, fontWeight: '700' }}>TAP TO UPLOAD</Text>
-                    </View>}
+                    {uploadingType === 'logo' ? <ActivityIndicator color={C.primary} /> : <Ionicons name="cloud-upload-outline" size={24} color={C.textMuted} />}
+                    <Text style={{ color: C.textMuted, fontSize: 11, fontWeight: '700' }}>TAP TO UPLOAD</Text>
+                  </View>}
               </TouchableOpacity>
             </View>
             {/* Cover */}
@@ -344,9 +390,9 @@ export default function EditShopScreen() {
                 {form.cover_image_url
                   ? <Image source={{ uri: buildUrl(form.cover_image_url) }} style={styles.mediaImg} />
                   : <View style={{ alignItems: 'center', gap: 6 }}>
-                      {uploadingType === 'cover' ? <ActivityIndicator color={C.primary} /> : <Ionicons name="cloud-upload-outline" size={24} color={C.textMuted} />}
-                      <Text style={{ color: C.textMuted, fontSize: 11, fontWeight: '700' }}>COVER PHOTO</Text>
-                    </View>}
+                    {uploadingType === 'cover' ? <ActivityIndicator color={C.primary} /> : <Ionicons name="cloud-upload-outline" size={24} color={C.textMuted} />}
+                    <Text style={{ color: C.textMuted, fontSize: 11, fontWeight: '700' }}>COVER PHOTO</Text>
+                  </View>}
               </TouchableOpacity>
             </View>
           </View>
@@ -372,9 +418,9 @@ export default function EditShopScreen() {
               {uploadingType === 'gallery'
                 ? <ActivityIndicator color={C.primary} />
                 : <>
-                    <Ionicons name="add" size={24} color={C.textMuted} />
-                    <Text style={{ color: C.textMuted, fontSize: 10, fontWeight: '700' }}>ADD PHOTO</Text>
-                  </>}
+                  <Ionicons name="add" size={24} color={C.textMuted} />
+                  <Text style={{ color: C.textMuted, fontSize: 10, fontWeight: '700' }}>ADD PHOTO</Text>
+                </>}
             </TouchableOpacity>
           </ScrollView>
         </Section>

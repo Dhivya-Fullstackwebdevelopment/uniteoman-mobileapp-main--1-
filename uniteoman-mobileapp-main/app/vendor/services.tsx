@@ -70,7 +70,18 @@ export default function VendorServicesScreen() {
   });
 
   const handleAdd = () => {
-    if (!newService.name.trim()) return Alert.alert('Missing Field', 'Please enter a service name.');
+    if (!newService.name.trim())
+    //return Alert.alert('Missing Field', 'Please enter a service name.');
+    {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Field',
+        text2: 'Please enter a service name.',
+        position: 'top',
+        visibilityTime: 3000,
+      });
+      return;
+    }
     addServiceMu.mutate({ ...newService, business_id: selectedShopId! });
   };
 

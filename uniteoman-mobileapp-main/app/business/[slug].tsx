@@ -28,6 +28,8 @@ import { BookingCreate, ServiceOut } from '../../types';
 import { useFavoritesStore } from '../../store/favoritesStore';
 import { THEME } from '@/components/Reuse.tsx/Reusecolor';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import Toast from 'react-native-toast-message';
+import { z } from 'zod';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const HERO_HEIGHT = 300;
@@ -178,7 +180,15 @@ function InputField({
   );
 }
 
-// ════════════════════════════════════════════════════════════
+
+const bookingSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().min(1, 'Email is required').email('Invalid email'),
+  phone: z.string().min(1, 'Phone is required'),
+  date: z.string().min(1, 'Date is required'),
+  time: z.string().min(1, 'Time is required'),
+});
+
 export default function BusinessDetailScreen() {
   const { slug } = useLocalSearchParams<{ slug: string }>();
   const C = Colors;
@@ -199,6 +209,7 @@ export default function BusinessDetailScreen() {
   const [showFullDesc, setShowFullDesc] = useState(false);
   const { isFavorite, toggleFavorite } = useFavoritesStore();
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [errors, setErrors] = useState<any>({});
 
   const { data: business, isLoading, error } = useQuery({
     queryKey: ['business', slug],
@@ -221,7 +232,12 @@ export default function BusinessDetailScreen() {
   const bookingMutation = useMutation({
     mutationFn: bookingApi.create,
     onSuccess: () => {
-      Alert.alert('Booking Sent! 🎉', 'Your booking request has been submitted. The business will confirm soon.');
+      // Alert.alert('Booking Sent! 🎉', 'Your booking request has been submitted. The business will confirm soon.');
+      Toast.show({
+        type: 'success',
+        text1: 'Your booking request has been submitted.',
+        text2: 'The business will confirm soon.',
+      });
       setShowBooking(false);
       setBookingForm({ name: '', email: '', phone: '', service: '', date: '', time: '' });
     },
@@ -229,24 +245,64 @@ export default function BusinessDetailScreen() {
       Alert.alert('Failed', err?.response?.data?.detail ?? 'Please try again.'),
   });
 
+  // const reviewMutation = useMutation({
+  //   mutationFn: reviewApi.create,
+  //   onSuccess: () => {
+  //     Alert.alert('Thanks!', 'Your review has been submitted.');
+  //     console.log("Review Success Triggered ✅");
+  //     setShowReviewForm(false);
+  //     setReviewerName(''); setReviewComment(''); setReviewRating(5);
+  //     queryClient.invalidateQueries({ queryKey: ['reviews', business?.id] });
+  //   },
+  //   onError: (err: any) => {
+  //     Toast.show({
+  //       type: 'error',
+  //       text1: 'Submission Failed ❌',
+  //       text2: err?.response?.data?.detail ?? 'Please try again.',
+  //     });
+  //   },
+  // });
+
   const reviewMutation = useMutation({
     mutationFn: reviewApi.create,
     onSuccess: () => {
-      Alert.alert('Thanks!', 'Your review has been submitted.');
+      Toast.show({
+        type: 'success',
+        text1: 'Review Submitted! 🎉',
+        text2: 'Thanks for sharing your experience.',
+      });
+
       setShowReviewForm(false);
-      setReviewerName(''); setReviewComment(''); setReviewRating(5);
+      setReviewerName('');
+      setReviewComment('');
+      setReviewRating(5);
       queryClient.invalidateQueries({ queryKey: ['reviews', business?.id] });
     },
-    onError: (err: any) =>
-      Alert.alert('Failed', err?.response?.data?.detail ?? 'Please try again.'),
+    onError: (err: any) => {
+      Toast.show({
+        type: 'error',
+        text1: 'Submission Failed ❌',
+        text2: err?.response?.data?.detail ?? 'Please try again.',
+      });
+    },
   });
 
+
   const handleBooking = () => {
-    const { name, email, phone, date, time } = bookingForm;
-    if (!name.trim() || !email.trim() || !phone.trim() || !date.trim() || !time.trim()) {
-      Alert.alert('Missing Info', 'Please fill Name, Email, Phone, Date and Time.');
+    const result = bookingSchema.safeParse(bookingForm);
+
+    if (!result.success) {
+      const fieldErrors: any = {};
+
+      result.error.issues.forEach((err) => {
+        fieldErrors[err.path[0]] = err.message;
+      });
+
+      setErrors(fieldErrors);
       return;
     }
+
+    setErrors({});
     bookingMutation.mutate({
       ...bookingForm,
       service: selectedService?.name || bookingForm.service,
@@ -266,7 +322,14 @@ export default function BusinessDetailScreen() {
   };
 
   const handleSubmitReview = () => {
-    if (!reviewerName.trim()) { Alert.alert('Missing', 'Enter your name.'); return; }
+    if (!reviewerName.trim()) {
+      Toast.show({
+        type: 'error',
+        text1: 'Missing Name',
+        text2: 'Please enter your name to submit a review.',
+      });
+      return;
+    }
     reviewMutation.mutate({
       business_id: business!.id,
       reviewer_name: reviewerName.trim(),
@@ -347,968 +410,993 @@ export default function BusinessDetailScreen() {
   const isLongDesc = description.length > 200;
 
   return (
-    <View style={[styles.safe, { backgroundColor: C.background }]}>
-      <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
+    <>
+      <View style={[styles.safe, { backgroundColor: C.background }]}>
+        <StatusBar barStyle="light-content" translucent backgroundColor="transparent" />
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 120 }}>
 
-        {/* GALLERY  */}
+          {/* GALLERY  */}
 
 
-        {/* ══════════ IDENTITY ══════════════════════════════════════ */}
-        <View style={[styles.identityCard, { backgroundColor: C.card }]}>
-          {/* Logo */}
-          {logoUri && (
-            <View style={[styles.logoWrap, { borderColor: C.card }]}>
-              <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="cover" />
+          {/* ══════════ IDENTITY ══════════════════════════════════════ */}
+          <View style={[styles.identityCard, { backgroundColor: C.card }]}>
+            {/* Logo */}
+            {logoUri && (
+              <View style={[styles.logoWrap, { borderColor: C.card }]}>
+                <Image source={{ uri: logoUri }} style={styles.logo} resizeMode="cover" />
+              </View>
+            )}
+
+            {/* Status badges */}
+            <View style={styles.badgesRow}>
+              {business.is_verified && (
+                <View style={[styles.badge, { backgroundColor: Colors.successBg }]}>
+                  <Ionicons name="checkmark-circle" size={12} color={Colors.success} />
+                  <Text style={[styles.badgeText, { color: Colors.success }]}>Verified</Text>
+                </View>
+              )}
+              {business.is_featured && (
+                <View style={[styles.badge, { backgroundColor: '#FFF7ED' }]}>
+                  <Ionicons name="star" size={12} color="#D97706" />
+                  <Text style={[styles.badgeText, { color: '#B45309' }]}>Featured</Text>
+                </View>
+              )}
+              {business.has_deal && (
+                <View style={[styles.badge, { backgroundColor: Colors.errorBg }]}>
+                  <Ionicons name="pricetag" size={12} color={Colors.error} />
+                  <Text style={[styles.badgeText, { color: Colors.error }]}>Deal</Text>
+                </View>
+              )}
+              {/* Open/Closed status */}
+              {todayHours && (
+                <View style={[styles.badge, { backgroundColor: openNow ? Colors.successBg : '#FEE2E2' }]}>
+                  <View style={[styles.statusDot, { backgroundColor: openNow ? Colors.success : Colors.error }]} />
+                  <Text style={[styles.badgeText, { color: openNow ? Colors.success : Colors.error }]}>
+                    {openNow ? 'Open Now' : 'Closed'}
+                  </Text>
+                </View>
+              )}
+            </View>
+
+            {/* Name */}
+            <Text style={[styles.bizName, { color: C.text }]}>{business.name_en}</Text>
+            {business.name_ar ? (
+              <Text style={[styles.bizNameAr, { color: C.textSecondary }]}>{business.name_ar}</Text>
+            ) : null}
+
+            {/* Rating + meta */}
+            <View style={styles.ratingMetaRow}>
+              <View style={styles.ratingChip}>
+                <StarRow rating={business.rating_avg} size={13} />
+                <Text style={[styles.ratingNum, { color: C.text }]}>
+                  {business.rating_avg.toFixed(1)}
+                </Text>
+                <Text style={[styles.ratingCount, { color: C.textMuted }]}>
+                  ({business.rating_count})
+                </Text>
+              </View>
+              <View style={styles.metaDivider} />
+              <View style={styles.metaChip}>
+                <Ionicons name="pricetag-outline" size={12} color={C.textMuted} />
+                <Text style={[styles.metaChipText, { color: C.textSecondary }]}>
+                  {business.category?.name_en}
+                </Text>
+              </View>
+              <View style={styles.metaChip}>
+                <Ionicons name="location-outline" size={12} color={C.textMuted} />
+                <Text style={[styles.metaChipText, { color: C.textSecondary }]}>
+                  {business.governorate?.name_en}
+                </Text>
+              </View>
+            </View>
+
+            {/* Quick action buttons */}
+            <View style={styles.quickActions}>
+              {business.whatsapp && (
+                <TouchableOpacity style={styles.qaWhatsApp} onPress={handleWhatsApp} activeOpacity={0.85}>
+                  <Ionicons name="logo-whatsapp" size={18} color="#FFF" />
+                  <Text style={styles.qaText}>WhatsApp</Text>
+                </TouchableOpacity>
+              )}
+              {business.phone && (
+                <TouchableOpacity
+                  style={[styles.qaCall, { backgroundColor: THEME.primary }]}
+                  onPress={handleCall}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="call" size={17} color="#FFF" />
+                  <Text style={styles.qaText}>Call</Text>
+                </TouchableOpacity>
+              )}
+              <TouchableOpacity
+                style={[styles.qaShare, { borderColor: C.border, backgroundColor: C.divider }]}
+                onPress={handleShare}
+                activeOpacity={0.8}
+              >
+                <Ionicons name="share-social-outline" size={17} color={C.text} />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* ══════════ STATS ROW ═════════════════════════════════════ */}
+          <View style={[styles.statsRow, { backgroundColor: C.card }]}>
+            <View style={styles.statItem}>
+              <View style={[styles.statIconWrap, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="star" size={18} color={Colors.accent} />
+              </View>
+              <Text style={[styles.statValue, { color: C.text }]}>
+                {business.rating_avg.toFixed(1)}
+              </Text>
+              <Text style={[styles.statLabel, { color: C.textMuted }]}>Rating</Text>
+            </View>
+            <View style={[styles.statDivider, { backgroundColor: C.divider }]} />
+
+            <View style={styles.statItem}>
+              <View style={[styles.statIconWrap, { backgroundColor: '#EDE9FE' }]}>
+                <Ionicons name="chatbubble-outline" size={17} color="#7C3AED" />
+              </View>
+              <Text style={[styles.statValue, { color: C.text }]}>{business.rating_count}</Text>
+              <Text style={[styles.statLabel, { color: C.textMuted }]}>Reviews</Text>
+            </View>
+            <View style={[styles.statDivider, { backgroundColor: C.divider }]} />
+
+            <View style={styles.statItem}>
+              <View style={[styles.statIconWrap, { backgroundColor: Colors.successBg }]}>
+                <Ionicons name="construct-outline" size={17} color={Colors.success} />
+              </View>
+              <Text style={[styles.statValue, { color: C.text }]}>{services.length}</Text>
+              <Text style={[styles.statLabel, { color: C.textMuted }]}>Services</Text>
+            </View>
+            <View style={[styles.statDivider, { backgroundColor: C.divider }]} />
+
+            <View style={styles.statItem}>
+              <View style={[styles.statIconWrap, { backgroundColor: '#DBEAFE' }]}>
+                <Ionicons name="eye-outline" size={17} color="#2563EB" />
+              </View>
+              <Text style={[styles.statValue, { color: C.text }]}>{business.view_count ?? '—'}</Text>
+              <Text style={[styles.statLabel, { color: C.textMuted }]}>Views</Text>
+            </View>
+          </View>
+
+          {/* ══════════ DEAL BANNER ═══════════════════════════════════ */}
+          {business.has_deal && business.deal_text && (
+            <View style={styles.dealBanner}>
+              <LinearGradient
+                colors={['#059669', '#10B981']}
+                style={styles.dealGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+              >
+                <View style={styles.dealLeft}>
+                  <View style={styles.dealIconWrap}>
+                    <Ionicons name="gift" size={22} color="#059669" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.dealTitle}>Special Offer</Text>
+                    <Text style={styles.dealText}>{business.deal_text}</Text>
+                  </View>
+                </View>
+                <View style={styles.dealArrow}>
+                  <Ionicons name="arrow-forward" size={16} color="rgba(255,255,255,0.8)" />
+                </View>
+              </LinearGradient>
             </View>
           )}
 
-          {/* Status badges */}
-          <View style={styles.badgesRow}>
-            {business.is_verified && (
-              <View style={[styles.badge, { backgroundColor: Colors.successBg }]}>
-                <Ionicons name="checkmark-circle" size={12} color={Colors.success} />
-                <Text style={[styles.badgeText, { color: Colors.success }]}>Verified</Text>
-              </View>
-            )}
-            {business.is_featured && (
-              <View style={[styles.badge, { backgroundColor: '#FFF7ED' }]}>
-                <Ionicons name="star" size={12} color="#D97706" />
-                <Text style={[styles.badgeText, { color: '#B45309' }]}>Featured</Text>
-              </View>
-            )}
-            {business.has_deal && (
-              <View style={[styles.badge, { backgroundColor: Colors.errorBg }]}>
-                <Ionicons name="pricetag" size={12} color={Colors.error} />
-                <Text style={[styles.badgeText, { color: Colors.error }]}>Deal</Text>
-              </View>
-            )}
-            {/* Open/Closed status */}
-            {todayHours && (
-              <View style={[styles.badge, { backgroundColor: openNow ? Colors.successBg : '#FEE2E2' }]}>
-                <View style={[styles.statusDot, { backgroundColor: openNow ? Colors.success : Colors.error }]} />
-                <Text style={[styles.badgeText, { color: openNow ? Colors.success : Colors.error }]}>
-                  {openNow ? 'Open Now' : 'Closed'}
-                </Text>
-              </View>
-            )}
-          </View>
-
-          {/* Name */}
-          <Text style={[styles.bizName, { color: C.text }]}>{business.name_en}</Text>
-          {business.name_ar ? (
-            <Text style={[styles.bizNameAr, { color: C.textSecondary }]}>{business.name_ar}</Text>
-          ) : null}
-
-          {/* Rating + meta */}
-          <View style={styles.ratingMetaRow}>
-            <View style={styles.ratingChip}>
-              <StarRow rating={business.rating_avg} size={13} />
-              <Text style={[styles.ratingNum, { color: C.text }]}>
-                {business.rating_avg.toFixed(1)}
-              </Text>
-              <Text style={[styles.ratingCount, { color: C.textMuted }]}>
-                ({business.rating_count})
-              </Text>
-            </View>
-            <View style={styles.metaDivider} />
-            <View style={styles.metaChip}>
-              <Ionicons name="pricetag-outline" size={12} color={C.textMuted} />
-              <Text style={[styles.metaChipText, { color: C.textSecondary }]}>
-                {business.category?.name_en}
-              </Text>
-            </View>
-            <View style={styles.metaChip}>
-              <Ionicons name="location-outline" size={12} color={C.textMuted} />
-              <Text style={[styles.metaChipText, { color: C.textSecondary }]}>
-                {business.governorate?.name_en}
-              </Text>
-            </View>
-          </View>
-
-          {/* Quick action buttons */}
-          <View style={styles.quickActions}>
-            {business.whatsapp && (
-              <TouchableOpacity style={styles.qaWhatsApp} onPress={handleWhatsApp} activeOpacity={0.85}>
-                <Ionicons name="logo-whatsapp" size={18} color="#FFF" />
-                <Text style={styles.qaText}>WhatsApp</Text>
-              </TouchableOpacity>
-            )}
-            {business.phone && (
-              <TouchableOpacity
-                style={[styles.qaCall, { backgroundColor: THEME.primary }]}
-                onPress={handleCall}
-                activeOpacity={0.85}
+          {/* ══════════ ABOUT ═════════════════════════════════════════ */}
+          {description.length > 0 && (
+            <View style={[styles.card, { backgroundColor: C.card }]}>
+              <SectionHeader icon="information-circle-outline" title="About" />
+              <Text
+                style={[styles.descText, { color: C.textSecondary }]}
+                numberOfLines={showFullDesc ? undefined : 4}
               >
-                <Ionicons name="call" size={17} color="#FFF" />
-                <Text style={styles.qaText}>Call</Text>
-              </TouchableOpacity>
-            )}
-            <TouchableOpacity
-              style={[styles.qaShare, { borderColor: C.border, backgroundColor: C.divider }]}
-              onPress={handleShare}
-              activeOpacity={0.8}
-            >
-              <Ionicons name="share-social-outline" size={17} color={C.text} />
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* ══════════ STATS ROW ═════════════════════════════════════ */}
-        <View style={[styles.statsRow, { backgroundColor: C.card }]}>
-          <View style={styles.statItem}>
-            <View style={[styles.statIconWrap, { backgroundColor: '#FEF3C7' }]}>
-              <Ionicons name="star" size={18} color={Colors.accent} />
-            </View>
-            <Text style={[styles.statValue, { color: C.text }]}>
-              {business.rating_avg.toFixed(1)}
-            </Text>
-            <Text style={[styles.statLabel, { color: C.textMuted }]}>Rating</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: C.divider }]} />
-
-          <View style={styles.statItem}>
-            <View style={[styles.statIconWrap, { backgroundColor: '#EDE9FE' }]}>
-              <Ionicons name="chatbubble-outline" size={17} color="#7C3AED" />
-            </View>
-            <Text style={[styles.statValue, { color: C.text }]}>{business.rating_count}</Text>
-            <Text style={[styles.statLabel, { color: C.textMuted }]}>Reviews</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: C.divider }]} />
-
-          <View style={styles.statItem}>
-            <View style={[styles.statIconWrap, { backgroundColor: Colors.successBg }]}>
-              <Ionicons name="construct-outline" size={17} color={Colors.success} />
-            </View>
-            <Text style={[styles.statValue, { color: C.text }]}>{services.length}</Text>
-            <Text style={[styles.statLabel, { color: C.textMuted }]}>Services</Text>
-          </View>
-          <View style={[styles.statDivider, { backgroundColor: C.divider }]} />
-
-          <View style={styles.statItem}>
-            <View style={[styles.statIconWrap, { backgroundColor: '#DBEAFE' }]}>
-              <Ionicons name="eye-outline" size={17} color="#2563EB" />
-            </View>
-            <Text style={[styles.statValue, { color: C.text }]}>{business.view_count ?? '—'}</Text>
-            <Text style={[styles.statLabel, { color: C.textMuted }]}>Views</Text>
-          </View>
-        </View>
-
-        {/* ══════════ DEAL BANNER ═══════════════════════════════════ */}
-        {business.has_deal && business.deal_text && (
-          <View style={styles.dealBanner}>
-            <LinearGradient
-              colors={['#059669', '#10B981']}
-              style={styles.dealGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
-              <View style={styles.dealLeft}>
-                <View style={styles.dealIconWrap}>
-                  <Ionicons name="gift" size={22} color="#059669" />
+                {description}
+              </Text>
+              {isLongDesc && (
+                <TouchableOpacity
+                  style={styles.readMoreBtn}
+                  onPress={() => setShowFullDesc(!showFullDesc)}
+                >
+                  <Text style={[styles.readMore, { color: C.primary }]}>
+                    {showFullDesc ? 'Show less' : 'Read more'}
+                  </Text>
+                  <Ionicons
+                    name={showFullDesc ? 'chevron-up' : 'chevron-down'}
+                    size={14}
+                    color={C.primary}
+                  />
+                </TouchableOpacity>
+              )}
+              {business.tags && business.tags.length > 0 && (
+                <View style={styles.tagsRow}>
+                  {business.tags.map((tag, i) => (
+                    <View key={i} style={[styles.tagChip, { backgroundColor: C.primaryBg }]}>
+                      <Text style={[styles.tagText, { color: C.primary }]}>{tag}</Text>
+                    </View>
+                  ))}
                 </View>
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.dealTitle}>Special Offer</Text>
-                  <Text style={styles.dealText}>{business.deal_text}</Text>
-                </View>
-              </View>
-              <View style={styles.dealArrow}>
-                <Ionicons name="arrow-forward" size={16} color="rgba(255,255,255,0.8)" />
-              </View>
-            </LinearGradient>
-          </View>
-        )}
+              )}
+            </View>
+          )}
 
-        {/* ══════════ ABOUT ═════════════════════════════════════════ */}
-        {description.length > 0 && (
+          {/* ══════════ SERVICES ══════════════════════════════════════ */}
           <View style={[styles.card, { backgroundColor: C.card }]}>
-            <SectionHeader icon="information-circle-outline" title="About" />
-            <Text
-              style={[styles.descText, { color: C.textSecondary }]}
-              numberOfLines={showFullDesc ? undefined : 4}
-            >
-              {description}
-            </Text>
-            {isLongDesc && (
-              <TouchableOpacity
-                style={styles.readMoreBtn}
-                onPress={() => setShowFullDesc(!showFullDesc)}
-              >
-                <Text style={[styles.readMore, { color: C.primary }]}>
-                  {showFullDesc ? 'Show less' : 'Read more'}
-                </Text>
-                <Ionicons
-                  name={showFullDesc ? 'chevron-up' : 'chevron-down'}
-                  size={14}
-                  color={C.primary}
-                />
-              </TouchableOpacity>
-            )}
-            {business.tags && business.tags.length > 0 && (
-              <View style={styles.tagsRow}>
-                {business.tags.map((tag, i) => (
-                  <View key={i} style={[styles.tagChip, { backgroundColor: C.primaryBg }]}>
-                    <Text style={[styles.tagText, { color: C.primary }]}>{tag}</Text>
+            <SectionHeader
+              icon="color-wand-outline"
+              title="Services"
+              badge={services.length}
+            />
+
+            {services.length === 0 ? (
+              <View style={styles.emptyBox}>
+                <View style={[styles.emptyIconWrap, { backgroundColor: THEME.light }]}>
+                  <Ionicons name="construct-outline" size={28} color={THEME.primary} />
+                </View>
+                <Text style={[styles.emptyTitle, { color: C.text }]}>No services listed</Text>
+                <Text style={[styles.emptySub, { color: C.textMuted }]}>Contact the business for availability.</Text>
+              </View>
+            ) : (
+              <View style={styles.servicesList}>
+                {services.map((service, i) => (
+                  <View key={service.id}>
+                    {i > 0 && <View style={[styles.serviceDivider, { backgroundColor: C.divider }]} />}
+                    <TouchableOpacity
+                      style={styles.serviceItem}
+                      onPress={() => openBookingForService(service)}
+                      activeOpacity={0.78}
+                    >
+                      {/* Accent strip */}
+                      <View style={[styles.serviceAccent, { backgroundColor: THEME.primary }]} />
+                      <View style={styles.serviceInfo}>
+                        <Text style={[styles.serviceName, { color: C.text }]}>{service.name}</Text>
+                        {service.description && (
+                          <Text style={[styles.serviceDesc, { color: C.textMuted }]} numberOfLines={2}>
+                            {service.description}
+                          </Text>
+                        )}
+                      </View>
+                      <View style={styles.serviceRight}>
+                        <Text style={[styles.servicePrice, { color: Colors.accent }]}>
+                          {service.price ? `${service.price} OMR` : 'Ask'}
+                        </Text>
+                        <View style={[styles.bookChip, { backgroundColor: THEME.light }]}>
+                          <Text style={[styles.bookChipText, { color: THEME.primary }]}>Book</Text>
+                          <Ionicons name="arrow-forward" size={11} color={THEME.primary} />
+                        </View>
+                      </View>
+                    </TouchableOpacity>
                   </View>
                 ))}
               </View>
             )}
-          </View>
-        )}
 
-        {/* ══════════ SERVICES ══════════════════════════════════════ */}
-        <View style={[styles.card, { backgroundColor: C.card }]}>
-          <SectionHeader
-            icon="color-wand-outline"
-            title="Services"
-            badge={services.length}
-          />
-
-          {services.length === 0 ? (
-            <View style={styles.emptyBox}>
-              <View style={[styles.emptyIconWrap, { backgroundColor: THEME.light }]}>
-                <Ionicons name="construct-outline" size={28} color={THEME.primary} />
-              </View>
-              <Text style={[styles.emptyTitle, { color: C.text }]}>No services listed</Text>
-              <Text style={[styles.emptySub, { color: C.textMuted }]}>Contact the business for availability.</Text>
-            </View>
-          ) : (
-            <View style={styles.servicesList}>
-              {services.map((service, i) => (
-                <View key={service.id}>
-                  {i > 0 && <View style={[styles.serviceDivider, { backgroundColor: C.divider }]} />}
-                  <TouchableOpacity
-                    style={styles.serviceItem}
-                    onPress={() => openBookingForService(service)}
-                    activeOpacity={0.78}
-                  >
-                    {/* Accent strip */}
-                    <View style={[styles.serviceAccent, { backgroundColor: THEME.primary }]} />
-                    <View style={styles.serviceInfo}>
-                      <Text style={[styles.serviceName, { color: C.text }]}>{service.name}</Text>
-                      {service.description && (
-                        <Text style={[styles.serviceDesc, { color: C.textMuted }]} numberOfLines={2}>
-                          {service.description}
-                        </Text>
-                      )}
-                    </View>
-                    <View style={styles.serviceRight}>
-                      <Text style={[styles.servicePrice, { color: Colors.accent }]}>
-                        {service.price ? `${service.price} OMR` : 'Ask'}
-                      </Text>
-                      <View style={[styles.bookChip, { backgroundColor: THEME.light }]}>
-                        <Text style={[styles.bookChipText, { color: THEME.primary }]}>Book</Text>
-                        <Ionicons name="arrow-forward" size={11} color={THEME.primary} />
-                      </View>
-                    </View>
-                  </TouchableOpacity>
-                </View>
-              ))}
-            </View>
-          )}
-
-          {/* Call for Enquiry card */}
-          <TouchableOpacity
-            style={[styles.enquiryCard, { borderColor: C.border, backgroundColor: C.background }]}
-            onPress={business.phone ? handleCall : handleWhatsApp}
-            activeOpacity={0.8}
-          >
-            <View style={[styles.enquiryIcon, { backgroundColor: '#FEF3C7' }]}>
-              <Ionicons name="call" size={18} color="#D97706" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={[styles.enquiryTitle, { color: C.text }]}>Call for Enquiry</Text>
-              <Text style={[styles.enquirySub, { color: C.textMuted }]}>
-                {business.phone || business.whatsapp || 'Contact directly'}
-              </Text>
-            </View>
-            <View style={[styles.enquiryCallBtn, { backgroundColor: '#FEF3C7' }]}>
-              <Ionicons name="call-outline" size={13} color="#D97706" />
-              <Text style={styles.enquiryCallText}>Call</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/*  BUSINESS HOURS */}
-        {business.business_hours && Object.keys(business.business_hours).length > 0 && (
-          <View style={[styles.card, { backgroundColor: C.card }]}>
+            {/* Call for Enquiry card */}
             <TouchableOpacity
-              style={styles.hoursHeader}
-              onPress={() => setShowAllHours(!showAllHours)}
-              activeOpacity={0.7}
+              style={[styles.enquiryCard, { borderColor: C.border, backgroundColor: C.background }]}
+              onPress={business.phone ? handleCall : handleWhatsApp}
+              activeOpacity={0.8}
             >
-              <SectionHeader
-                icon="time-outline"
-                title="Business Hours"
-                action={
-                  <Ionicons
-                    name={showAllHours ? 'chevron-up' : 'chevron-down'}
-                    size={18}
-                    color={C.textMuted}
-                  />
-                }
-              />
+              <View style={[styles.enquiryIcon, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="call" size={18} color="#D97706" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[styles.enquiryTitle, { color: C.text }]}>Call for Enquiry</Text>
+                <Text style={[styles.enquirySub, { color: C.textMuted }]}>
+                  {business.phone || business.whatsapp || 'Contact directly'}
+                </Text>
+              </View>
+              <View style={[styles.enquiryCallBtn, { backgroundColor: '#FEF3C7' }]}>
+                <Ionicons name="call-outline" size={13} color="#D97706" />
+                <Text style={styles.enquiryCallText}>Call</Text>
+              </View>
             </TouchableOpacity>
-
-            {/* Today's hours */}
-            {todayHours && (
-              <View style={[styles.todayRow, { backgroundColor: openNow ? Colors.successBg : Colors.errorBg }]}>
-                <View style={[styles.todayDot, { backgroundColor: openNow ? Colors.success : Colors.error }]} />
-                <Text style={[styles.hoursDay, { color: openNow ? Colors.success : Colors.error, fontWeight: '700' }]}>
-                  {DAY_FULL[todayKey]} (Today)
-                </Text>
-                <Text style={[styles.hoursTime, { color: openNow ? Colors.success : Colors.error, fontWeight: '700' }]}>
-                  {formatHours(todayHours)}
-                </Text>
-              </View>
-            )}
-
-            {/* All hours (expanded) */}
-            {showAllHours && (
-              <View style={styles.hoursExpanded}>
-                {DAY_ORDER.map((day) => {
-                  if (day === todayKey) return null;
-                  const hours = business.business_hours?.[day];
-                  if (!hours) return null;
-                  const display = formatHours(hours);
-                  const isClosed = display === 'Closed';
-                  return (
-                    <View key={day} style={styles.hoursRow}>
-                      <Text style={[styles.hoursDay, { color: C.textSecondary }]}>{DAY_FULL[day]}</Text>
-                      <Text style={[styles.hoursTime, { color: isClosed ? C.error : C.text }]}>
-                        {display}
-                      </Text>
-                    </View>
-                  );
-                })}
-              </View>
-            )}
-          </View>
-        )}
-
-        {/* CONTACT  */}
-        <View style={[styles.card, { backgroundColor: C.card }]}>
-          <SectionHeader icon="call-outline" title="Contact" />
-
-          <View style={styles.contactBtnRow}>
-            {business.whatsapp && (
-              <TouchableOpacity
-                style={styles.contactBtnWa}
-                onPress={handleWhatsApp}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="logo-whatsapp" size={20} color="#FFF" />
-                <Text style={styles.contactBtnText}>WhatsApp</Text>
-              </TouchableOpacity>
-            )}
-            {business.phone && (
-              <TouchableOpacity
-                style={[styles.contactBtnCall, { backgroundColor: THEME.primary }]}
-                onPress={handleCall}
-                activeOpacity={0.85}
-              >
-                <Ionicons name="call" size={19} color="#FFF" />
-                <Text style={styles.contactBtnText}>Call Now</Text>
-              </TouchableOpacity>
-            )}
           </View>
 
-          <View style={styles.contactList}>
-            {business.phone && (
-              <View style={styles.contactRow}>
-                <View style={[styles.contactIconBox, { backgroundColor: C.primaryBg }]}>
-                  <Ionicons name="call-outline" size={14} color={C.primary} />
-                </View>
-                <Text style={[styles.contactValue, { color: C.textSecondary }]}>{business.phone}</Text>
-              </View>
-            )}
-            {business.email && (
-              <View style={styles.contactRow}>
-                <View style={[styles.contactIconBox, { backgroundColor: '#FEF3C7' }]}>
-                  <Ionicons name="mail-outline" size={14} color="#D97706" />
-                </View>
-                <Text style={[styles.contactValue, { color: C.textSecondary }]}>{business.email}</Text>
-              </View>
-            )}
-            {business.website && (
+          {/*  BUSINESS HOURS */}
+          {business.business_hours && Object.keys(business.business_hours).length > 0 && (
+            <View style={[styles.card, { backgroundColor: C.card }]}>
               <TouchableOpacity
-                style={styles.contactRow}
-                onPress={() => Linking.openURL(business.website!)}
+                style={styles.hoursHeader}
+                onPress={() => setShowAllHours(!showAllHours)}
+                activeOpacity={0.7}
               >
-                <View style={[styles.contactIconBox, { backgroundColor: '#DBEAFE' }]}>
-                  <Ionicons name="globe-outline" size={14} color="#2563EB" />
-                </View>
-                <Text style={[styles.contactValue, { color: C.primary }]} numberOfLines={1}>
-                  {business.website}
-                </Text>
-                <Ionicons name="open-outline" size={12} color={C.textMuted} style={{ marginLeft: 4 }} />
+                <SectionHeader
+                  icon="time-outline"
+                  title="Business Hours"
+                  action={
+                    <Ionicons
+                      name={showAllHours ? 'chevron-up' : 'chevron-down'}
+                      size={18}
+                      color={C.textMuted}
+                    />
+                  }
+                />
               </TouchableOpacity>
-            )}
-            {business.address && (
-              <View style={styles.contactRow}>
-                <View style={[styles.contactIconBox, { backgroundColor: '#ECFDF5' }]}>
-                  <Ionicons name="location-outline" size={14} color={Colors.success} />
+
+              {/* Today's hours */}
+              {todayHours && (
+                <View style={[styles.todayRow, { backgroundColor: openNow ? Colors.successBg : Colors.errorBg }]}>
+                  <View style={[styles.todayDot, { backgroundColor: openNow ? Colors.success : Colors.error }]} />
+                  <Text style={[styles.hoursDay, { color: openNow ? Colors.success : Colors.error, fontWeight: '700' }]}>
+                    {DAY_FULL[todayKey]} (Today)
+                  </Text>
+                  <Text style={[styles.hoursTime, { color: openNow ? Colors.success : Colors.error, fontWeight: '700' }]}>
+                    {formatHours(todayHours)}
+                  </Text>
                 </View>
-                <Text style={[styles.contactValue, { color: C.textSecondary }]} numberOfLines={2}>
-                  {business.address}
-                </Text>
-              </View>
-            )}
-          </View>
-        </View>
+              )}
 
-        {/* ══════════ LOCATION MAP ══════════════════════════════════ */}
-        <View style={[styles.card, { backgroundColor: C.card }]}>
-          <SectionHeader icon="location-outline" title="Location" />
-          <TouchableOpacity
-            activeOpacity={0.85}
-            style={styles.mapContainer}
-            onPress={() => {
-              const name = encodeURIComponent(business.name_en);
-              const address = encodeURIComponent(
-                business.address || `${business.governorate?.name_en || ''}, Oman`,
-              );
-              const url = business.latitude && business.longitude
-                ? `https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`
-                : `https://www.google.com/maps/search/?api=1&query=${name}+${address}`;
-              Linking.openURL(url);
-            }}
-          >
-            {business.latitude && business.longitude ? (
-              <Image
-                source={{
-                  uri: `https://maps.googleapis.com/maps/api/staticmap?center=${business.latitude},${business.longitude}&zoom=15&size=600x300&markers=color:indigo%7C${business.latitude},${business.longitude}`,
-                }}
-                style={styles.mapImage}
-                resizeMode="cover"
-              />
-            ) : (
-              <View style={[styles.mapImage, styles.mapPlaceholder]}>
-                {/* <LinearGradient colors={THEME.lighgradient} style={StyleSheet.absoluteFill} /> */}
-                <Ionicons name="map-outline" size={40} color={THEME.primary} />
-                <Text style={{ color: THEME.primary, fontWeight: '600', fontSize: 13, marginTop: 8 }}>
-                  View on Map
-                </Text>
-              </View>
-            )}
-            {/* Address bar */}
-            <View style={[styles.mapBar, { backgroundColor: C.card }]}>
-              <View style={[styles.mapBarIcon, { backgroundColor: THEME.light }]}>
-                <Ionicons name="location" size={14} color={THEME.primary} />
-              </View>
-              <Text style={[styles.mapAddress, { color: C.text }]} numberOfLines={1}>
-                {business.address || `${business.governorate?.name_en}, Sultanate of Oman`}
-              </Text>
-              <View style={[styles.openMapsChip, { borderColor: C.border }]}>
-                <Ionicons name="open-outline" size={12} color={C.textMuted} />
-                <Text style={[styles.openMapsText, { color: C.textMuted }]}>Open</Text>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </View>
-
-        {/* ══════════ REVIEWS ═══════════════════════════════════════ */}
-        <View style={[styles.card, { backgroundColor: C.card }]}>
-          <SectionHeader
-            icon="chatbubbles-outline"
-            title="Reviews"
-            badge={reviews?.length}
-            action={
-              <TouchableOpacity
-                style={[styles.writeReviewBtn, { borderColor: THEME.primary, backgroundColor: THEME.light }]}
-                onPress={() => setShowReviewForm(!showReviewForm)}
-              >
-                <Ionicons name="create-outline" size={13} color={THEME.primary} />
-                <Text style={[styles.writeReviewText, { color: THEME.primary }]}>Write Review</Text>
-              </TouchableOpacity>
-            }
-          />
-
-          {/* Aggregate rating display */}
-          {reviews && reviews.length > 0 && (
-            <View style={[styles.ratingAggregate, { backgroundColor: C.background }]}>
-              <View style={styles.ratingBig}>
-                <Text style={[styles.ratingBigNum, { color: C.text }]}>
-                  {business.rating_avg.toFixed(1)}
-                </Text>
-                <StarRow rating={business.rating_avg} size={16} />
-                <Text style={[styles.ratingBigCount, { color: C.textMuted }]}>
-                  {business.rating_count} reviews
-                </Text>
-              </View>
-              {/* Bar chart */}
-              <View style={styles.ratingBars}>
-                {[5, 4, 3, 2, 1].map((star) => {
-                  const count = reviews.filter((r) => r.rating === star).length;
-                  const pct = reviews.length > 0 ? count / reviews.length : 0;
-                  return (
-                    <View key={star} style={styles.ratingBarRow}>
-                      <Text style={[styles.ratingBarLabel, { color: C.textMuted }]}>{star}</Text>
-                      <Ionicons name="star" size={10} color={Colors.accent} />
-                      <View style={[styles.ratingBarBg, { backgroundColor: C.divider }]}>
-                        <View
-                          style={[
-                            styles.ratingBarFill,
-                            { backgroundColor: Colors.accent, width: `${pct * 100}%` },
-                          ]}
-                        />
+              {/* All hours (expanded) */}
+              {showAllHours && (
+                <View style={styles.hoursExpanded}>
+                  {DAY_ORDER.map((day) => {
+                    if (day === todayKey) return null;
+                    const hours = business.business_hours?.[day];
+                    if (!hours) return null;
+                    const display = formatHours(hours);
+                    const isClosed = display === 'Closed';
+                    return (
+                      <View key={day} style={styles.hoursRow}>
+                        <Text style={[styles.hoursDay, { color: C.textSecondary }]}>{DAY_FULL[day]}</Text>
+                        <Text style={[styles.hoursTime, { color: isClosed ? C.error : C.text }]}>
+                          {display}
+                        </Text>
                       </View>
-                      <Text style={[styles.ratingBarCount, { color: C.textMuted }]}>{count}</Text>
-                    </View>
-                  );
-                })}
-              </View>
+                    );
+                  })}
+                </View>
+              )}
             </View>
           )}
 
-          {/* Review form */}
-          {showReviewForm && (
-            <View style={[styles.reviewForm, { backgroundColor: C.background, borderColor: C.border }]}>
-              <Text style={[styles.reviewFormTitle, { color: C.text }]}>Share Your Experience</Text>
-              <View style={[styles.inputWrap, { borderColor: C.border, backgroundColor: '#FFF', marginBottom: 0 }]}>
-                <View style={[styles.inputIconBox, { backgroundColor: THEME.light }]}>
-                  <Ionicons name="person-outline" size={15} color={THEME.primary} />
+          {/* CONTACT  */}
+          <View style={[styles.card, { backgroundColor: C.card }]}>
+            <SectionHeader icon="call-outline" title="Contact" />
+
+            <View style={styles.contactBtnRow}>
+              {business.whatsapp && (
+                <TouchableOpacity
+                  style={styles.contactBtnWa}
+                  onPress={handleWhatsApp}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="logo-whatsapp" size={20} color="#FFF" />
+                  <Text style={styles.contactBtnText}>WhatsApp</Text>
+                </TouchableOpacity>
+              )}
+              {business.phone && (
+                <TouchableOpacity
+                  style={[styles.contactBtnCall, { backgroundColor: THEME.primary }]}
+                  onPress={handleCall}
+                  activeOpacity={0.85}
+                >
+                  <Ionicons name="call" size={19} color="#FFF" />
+                  <Text style={styles.contactBtnText}>Call Now</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+
+            <View style={styles.contactList}>
+              {business.phone && (
+                <View style={styles.contactRow}>
+                  <View style={[styles.contactIconBox, { backgroundColor: C.primaryBg }]}>
+                    <Ionicons name="call-outline" size={14} color={C.primary} />
+                  </View>
+                  <Text style={[styles.contactValue, { color: C.textSecondary }]}>{business.phone}</Text>
                 </View>
-                <TextInput
-                  style={[styles.inputInner, { color: C.text }]}
-                  placeholder="Your Name"
-                  placeholderTextColor={C.textMuted}
-                  value={reviewerName}
-                  onChangeText={setReviewerName}
+              )}
+              {business.email && (
+                <View style={styles.contactRow}>
+                  <View style={[styles.contactIconBox, { backgroundColor: '#FEF3C7' }]}>
+                    <Ionicons name="mail-outline" size={14} color="#D97706" />
+                  </View>
+                  <Text style={[styles.contactValue, { color: C.textSecondary }]}>{business.email}</Text>
+                </View>
+              )}
+              {business.website && (
+                <TouchableOpacity
+                  style={styles.contactRow}
+                  onPress={() => Linking.openURL(business.website!)}
+                >
+                  <View style={[styles.contactIconBox, { backgroundColor: '#DBEAFE' }]}>
+                    <Ionicons name="globe-outline" size={14} color="#2563EB" />
+                  </View>
+                  <Text style={[styles.contactValue, { color: C.primary }]} numberOfLines={1}>
+                    {business.website}
+                  </Text>
+                  <Ionicons name="open-outline" size={12} color={C.textMuted} style={{ marginLeft: 4 }} />
+                </TouchableOpacity>
+              )}
+              {business.address && (
+                <View style={styles.contactRow}>
+                  <View style={[styles.contactIconBox, { backgroundColor: '#ECFDF5' }]}>
+                    <Ionicons name="location-outline" size={14} color={Colors.success} />
+                  </View>
+                  <Text style={[styles.contactValue, { color: C.textSecondary }]} numberOfLines={2}>
+                    {business.address}
+                  </Text>
+                </View>
+              )}
+            </View>
+          </View>
+
+          {/* ══════════ LOCATION MAP ══════════════════════════════════ */}
+          <View style={[styles.card, { backgroundColor: C.card }]}>
+            <SectionHeader icon="location-outline" title="Location" />
+            <TouchableOpacity
+              activeOpacity={0.85}
+              style={styles.mapContainer}
+              onPress={() => {
+                const name = encodeURIComponent(business.name_en);
+                const address = encodeURIComponent(
+                  business.address || `${business.governorate?.name_en || ''}, Oman`,
+                );
+                const url = business.latitude && business.longitude
+                  ? `https://www.google.com/maps/search/?api=1&query=${business.latitude},${business.longitude}`
+                  : `https://www.google.com/maps/search/?api=1&query=${name}+${address}`;
+                Linking.openURL(url);
+              }}
+            >
+              {business.latitude && business.longitude ? (
+                <Image
+                  source={{
+                    uri: `https://maps.googleapis.com/maps/api/staticmap?center=${business.latitude},${business.longitude}&zoom=15&size=600x300&markers=color:indigo%7C${business.latitude},${business.longitude}`,
+                  }}
+                  style={styles.mapImage}
+                  resizeMode="cover"
                 />
+              ) : (
+                <View style={[styles.mapImage, styles.mapPlaceholder]}>
+                  {/* <LinearGradient colors={THEME.lighgradient} style={StyleSheet.absoluteFill} /> */}
+                  <Ionicons name="map-outline" size={40} color={THEME.primary} />
+                  <Text style={{ color: THEME.primary, fontWeight: '600', fontSize: 13, marginTop: 8 }}>
+                    View on Map
+                  </Text>
+                </View>
+              )}
+              {/* Address bar */}
+              <View style={[styles.mapBar, { backgroundColor: C.card }]}>
+                <View style={[styles.mapBarIcon, { backgroundColor: THEME.light }]}>
+                  <Ionicons name="location" size={14} color={THEME.primary} />
+                </View>
+                <Text style={[styles.mapAddress, { color: C.text }]} numberOfLines={1}>
+                  {business.address || `${business.governorate?.name_en}, Sultanate of Oman`}
+                </Text>
+                <View style={[styles.openMapsChip, { borderColor: C.border }]}>
+                  <Ionicons name="open-outline" size={12} color={C.textMuted} />
+                  <Text style={[styles.openMapsText, { color: C.textMuted }]}>Open</Text>
+                </View>
               </View>
-              <View style={styles.starPickerRow}>
-                <Text style={[styles.rateLabel, { color: C.textSecondary }]}>Your rating:</Text>
-                <View style={styles.starPicker}>
-                  {[1, 2, 3, 4, 5].map((s) => (
-                    <TouchableOpacity key={s} onPress={() => setReviewRating(s)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
-                      <Ionicons
-                        name={s <= reviewRating ? 'star' : 'star-outline'}
-                        size={30}
-                        color={Colors.accent}
-                      />
+            </TouchableOpacity>
+          </View>
+
+          {/* ══════════ REVIEWS ═══════════════════════════════════════ */}
+          <View style={[styles.card, { backgroundColor: C.card }]}>
+            <SectionHeader
+              icon="chatbubbles-outline"
+              title="Reviews"
+              badge={reviews?.length}
+              action={
+                <TouchableOpacity
+                  style={[styles.writeReviewBtn, { borderColor: THEME.primary, backgroundColor: THEME.light }]}
+                  onPress={() => setShowReviewForm(!showReviewForm)}
+                >
+                  <Ionicons name="create-outline" size={13} color={THEME.primary} />
+                  <Text style={[styles.writeReviewText, { color: THEME.primary }]}>Write Review</Text>
+                </TouchableOpacity>
+              }
+            />
+
+            {/* Aggregate rating display */}
+            {reviews && reviews.length > 0 && (
+              <View style={[styles.ratingAggregate, { backgroundColor: C.background }]}>
+                <View style={styles.ratingBig}>
+                  <Text style={[styles.ratingBigNum, { color: C.text }]}>
+                    {business.rating_avg.toFixed(1)}
+                  </Text>
+                  <StarRow rating={business.rating_avg} size={16} />
+                  <Text style={[styles.ratingBigCount, { color: C.textMuted }]}>
+                    {business.rating_count} reviews
+                  </Text>
+                </View>
+                {/* Bar chart */}
+                <View style={styles.ratingBars}>
+                  {[5, 4, 3, 2, 1].map((star) => {
+                    const count = reviews.filter((r) => r.rating === star).length;
+                    const pct = reviews.length > 0 ? count / reviews.length : 0;
+                    return (
+                      <View key={star} style={styles.ratingBarRow}>
+                        <Text style={[styles.ratingBarLabel, { color: C.textMuted }]}>{star}</Text>
+                        <Ionicons name="star" size={10} color={Colors.accent} />
+                        <View style={[styles.ratingBarBg, { backgroundColor: C.divider }]}>
+                          <View
+                            style={[
+                              styles.ratingBarFill,
+                              { backgroundColor: Colors.accent, width: `${pct * 100}%` },
+                            ]}
+                          />
+                        </View>
+                        <Text style={[styles.ratingBarCount, { color: C.textMuted }]}>{count}</Text>
+                      </View>
+                    );
+                  })}
+                </View>
+              </View>
+            )}
+
+            {/* Review form */}
+            {showReviewForm && (
+              <View style={[styles.reviewForm, { backgroundColor: C.background, borderColor: C.border }]}>
+                <Text style={[styles.reviewFormTitle, { color: C.text }]}>Share Your Experience</Text>
+                <View style={[styles.inputWrap, { borderColor: C.border, backgroundColor: '#FFF', marginBottom: 0 }]}>
+                  <View style={[styles.inputIconBox, { backgroundColor: THEME.light }]}>
+                    <Ionicons name="person-outline" size={15} color={THEME.primary} />
+                  </View>
+                  <TextInput
+                    style={[styles.inputInner, { color: C.text }]}
+                    placeholder="Your Name"
+                    placeholderTextColor={C.textMuted}
+                    value={reviewerName}
+                    onChangeText={setReviewerName}
+                  />
+                </View>
+                <View style={styles.starPickerRow}>
+                  <Text style={[styles.rateLabel, { color: C.textSecondary }]}>Your rating:</Text>
+                  <View style={styles.starPicker}>
+                    {[1, 2, 3, 4, 5].map((s) => (
+                      <TouchableOpacity key={s} onPress={() => setReviewRating(s)} hitSlop={{ top: 8, bottom: 8, left: 4, right: 4 }}>
+                        <Ionicons
+                          name={s <= reviewRating ? 'star' : 'star-outline'}
+                          size={30}
+                          color={Colors.accent}
+                        />
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+                <View style={[styles.inputWrap, { borderColor: C.border, backgroundColor: '#FFF', alignItems: 'flex-start', paddingTop: 12 }]}>
+                  <View style={[styles.inputIconBox, { backgroundColor: THEME.light, marginTop: 0 }]}>
+                    <Ionicons name="chatbubble-outline" size={14} color={THEME.primary} />
+                  </View>
+                  <TextInput
+                    style={[styles.inputInner, styles.textArea, { color: C.text }]}
+                    placeholder="Share your experience with others…"
+                    placeholderTextColor={C.textMuted}
+                    value={reviewComment}
+                    onChangeText={setReviewComment}
+                    multiline
+                    numberOfLines={3}
+                  />
+                </View>
+                <TouchableOpacity
+                  style={styles.submitBtn}
+                  onPress={handleSubmitReview}
+                >
+                  <LinearGradient
+                    colors={THEME.gradient} // Using your theme gradient for consistency
+                    style={styles.submitBtnGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    {reviewMutation.isPending ? (
+                      <ActivityIndicator color="#FFF" size="small" />
+                    ) : (
+                      <>
+                        <Ionicons name="send" size={16} color="#FFF" />
+                        <Text style={styles.submitBtnText}>Publish Review</Text>
+                      </>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+            )}
+
+            {/* Review list */}
+            {reviews && reviews.length > 0 ? (
+              <View style={styles.reviewList}>
+                {reviews.slice(0, 5).map((review, i) => (
+                  <View key={review.id}>
+                    {i > 0 && <View style={[styles.reviewDivider, { backgroundColor: C.divider }]} />}
+                    <View style={styles.reviewItem}>
+                      <View style={styles.reviewTop}>
+                        <LinearGradient
+                          colors={Gradients.primary}
+                          style={styles.reviewAvatar}
+                          start={{ x: 0, y: 0 }}
+                          end={{ x: 1, y: 1 }}
+                        >
+                          <Text style={styles.reviewAvatarText}>
+                            {review.reviewer_name?.[0]?.toUpperCase() || '?'}
+                          </Text>
+                        </LinearGradient>
+                        <View style={{ flex: 1 }}>
+                          <View style={styles.reviewNameRow}>
+                            <Text style={[styles.reviewName, { color: C.text }]}>
+                              {review.reviewer_name}
+                            </Text>
+                            {review.is_verified && (
+                              <Ionicons name="checkmark-circle" size={14} color={Colors.success} />
+                            )}
+                          </View>
+                          <View style={styles.reviewMeta}>
+                            <StarRow rating={review.rating} size={11} />
+                            <Text style={[styles.reviewDate, { color: C.textMuted }]}>
+                              {new Date(review.created_at).toLocaleDateString('en-US', {
+                                month: 'short', day: 'numeric', year: 'numeric',
+                              })}
+                            </Text>
+                          </View>
+                        </View>
+                      </View>
+                      {review.comment ? (
+                        <Text style={[styles.reviewComment, { color: C.textSecondary }]}>
+                          {review.comment}
+                        </Text>
+                      ) : null}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : (
+              <View style={styles.emptyBox}>
+                <View style={[styles.emptyIconWrap, { backgroundColor: THEME.light }]}>
+                  <Ionicons name="chatbubble-ellipses-outline" size={28} color={THEME.primary} />
+                </View>
+                <Text style={[styles.emptyTitle, { color: C.text }]}>No reviews yet</Text>
+                <Text style={[styles.emptySub, { color: C.textMuted }]}>Be the first to share your experience!</Text>
+              </View>
+            )}
+          </View>
+          {/* ══════════ PHOTO GALLERY ═════════════════ */}
+          <View style={[styles.card, { backgroundColor: C.card }]}>
+            <SectionHeader icon="images-outline" title="Photo Gallery" />
+
+            <View style={styles.galleryContainer}>
+              {/* Hero Image */}
+              <TouchableOpacity activeOpacity={0.95} onPress={() => openLightbox(0)}>
+                {allImages.length > 0 ? (
+                  <Image source={{ uri: allImages[0] }} style={styles.heroImage} />
+                ) : (
+                  <View style={[styles.heroImage, styles.heroPlaceholder]}>
+                    <Ionicons name="images-outline" size={50} color="#999" />
+                  </View>
+                )}
+              </TouchableOpacity>
+
+              {/* Thumbnails */}
+              {allImages.length > 1 && (
+                <View style={styles.thumbRow}>
+                  {allImages.slice(1, 4).map((uri, i) => (
+                    <TouchableOpacity key={i} onPress={() => openLightbox(i + 1)}>
+                      <Image source={{ uri }} style={styles.thumbImg} />
                     </TouchableOpacity>
                   ))}
                 </View>
-              </View>
-              <View style={[styles.inputWrap, { borderColor: C.border, backgroundColor: '#FFF', alignItems: 'flex-start', paddingTop: 12 }]}>
-                <View style={[styles.inputIconBox, { backgroundColor: THEME.light, marginTop: 0 }]}>
-                  <Ionicons name="chatbubble-outline" size={14} color={THEME.primary} />
-                </View>
-                <TextInput
-                  style={[styles.inputInner, styles.textArea, { color: C.text }]}
-                  placeholder="Share your experience with others…"
-                  placeholderTextColor={C.textMuted}
-                  value={reviewComment}
-                  onChangeText={setReviewComment}
-                  multiline
-                  numberOfLines={3}
-                />
-              </View>
-              <TouchableOpacity
-                style={styles.submitBtn}
-                onPress={handleSubmitReview}
-              >
-                <LinearGradient
-                  colors={THEME.gradient} // Using your theme gradient for consistency
-                  style={styles.submitBtnGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                >
-                  {reviewMutation.isPending ? (
-                    <ActivityIndicator color="#FFF" size="small" />
-                  ) : (
-                    <>
-                      <Ionicons name="send" size={16} color="#FFF" />
-                      <Text style={styles.submitBtnText}>Publish Review</Text>
-                    </>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {/* Review list */}
-          {reviews && reviews.length > 0 ? (
-            <View style={styles.reviewList}>
-              {reviews.slice(0, 5).map((review, i) => (
-                <View key={review.id}>
-                  {i > 0 && <View style={[styles.reviewDivider, { backgroundColor: C.divider }]} />}
-                  <View style={styles.reviewItem}>
-                    <View style={styles.reviewTop}>
-                      <LinearGradient
-                        colors={Gradients.primary}
-                        style={styles.reviewAvatar}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 1 }}
-                      >
-                        <Text style={styles.reviewAvatarText}>
-                          {review.reviewer_name?.[0]?.toUpperCase() || '?'}
-                        </Text>
-                      </LinearGradient>
-                      <View style={{ flex: 1 }}>
-                        <View style={styles.reviewNameRow}>
-                          <Text style={[styles.reviewName, { color: C.text }]}>
-                            {review.reviewer_name}
-                          </Text>
-                          {review.is_verified && (
-                            <Ionicons name="checkmark-circle" size={14} color={Colors.success} />
-                          )}
-                        </View>
-                        <View style={styles.reviewMeta}>
-                          <StarRow rating={review.rating} size={11} />
-                          <Text style={[styles.reviewDate, { color: C.textMuted }]}>
-                            {new Date(review.created_at).toLocaleDateString('en-US', {
-                              month: 'short', day: 'numeric', year: 'numeric',
-                            })}
-                          </Text>
-                        </View>
-                      </View>
-                    </View>
-                    {review.comment ? (
-                      <Text style={[styles.reviewComment, { color: C.textSecondary }]}>
-                        {review.comment}
-                      </Text>
-                    ) : null}
-                  </View>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <View style={styles.emptyBox}>
-              <View style={[styles.emptyIconWrap, { backgroundColor: THEME.light }]}>
-                <Ionicons name="chatbubble-ellipses-outline" size={28} color={THEME.primary} />
-              </View>
-              <Text style={[styles.emptyTitle, { color: C.text }]}>No reviews yet</Text>
-              <Text style={[styles.emptySub, { color: C.textMuted }]}>Be the first to share your experience!</Text>
-            </View>
-          )}
-        </View>
-        {/* ══════════ PHOTO GALLERY ═════════════════ */}
-        <View style={[styles.card, { backgroundColor: C.card }]}>
-          <SectionHeader icon="images-outline" title="Photo Gallery" />
-
-          <View style={styles.galleryContainer}>
-            {/* Hero Image */}
-            <TouchableOpacity activeOpacity={0.95} onPress={() => openLightbox(0)}>
-              {allImages.length > 0 ? (
-                <Image source={{ uri: allImages[0] }} style={styles.heroImage} />
-              ) : (
-                <View style={[styles.heroImage, styles.heroPlaceholder]}>
-                  <Ionicons name="images-outline" size={50} color="#999" />
-                </View>
               )}
-            </TouchableOpacity>
-
-            {/* Thumbnails */}
-            {allImages.length > 1 && (
-              <View style={styles.thumbRow}>
-                {allImages.slice(1, 4).map((uri, i) => (
-                  <TouchableOpacity key={i} onPress={() => openLightbox(i + 1)}>
-                    <Image source={{ uri }} style={styles.thumbImg} />
-                  </TouchableOpacity>
-                ))}
-              </View>
-            )}
-          </View>
-        </View>
-        <SafeAreaView
-          style={[styles.navOverlay, { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 99 }]}
-          edges={['top']}
-        >
-          <TouchableOpacity style={styles.navBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={20} color="#FFF" />
-          </TouchableOpacity>
-          <View style={styles.navRight}>
-            <TouchableOpacity style={styles.navBtn} onPress={handleShare}>
-              <Ionicons name="share-outline" size={19} color="#FFF" />
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.navBtn}
-              onPress={() => business && toggleFavorite(business as any)}
-            >
-              <Ionicons
-                name={business && isFavorite(business.id) ? 'heart' : 'heart-outline'}
-                size={19}
-                color={business && isFavorite(business.id) ? '#F87171' : '#FFF'}
-              />
-            </TouchableOpacity>
-          </View>
-        </SafeAreaView>
-      </ScrollView>
-
-      {/* ══════════ STICKY BOTTOM BAR ════════════════════════════════ */}
-      <View style={[styles.bottomBar, { backgroundColor: C.card, borderTopColor: C.border }]}>
-        <View style={styles.bottomLeft}>
-          <Text style={[styles.bottomBizName, { color: C.text }]} numberOfLines={1}>
-            {business.name_en}
-          </Text>
-          <View style={styles.bottomRating}>
-            <Ionicons name="star" size={12} color={Colors.accent} />
-            <Text style={[styles.bottomRatingText, { color: C.textSecondary }]}>
-              {business.rating_avg.toFixed(1)} · {business.rating_count} reviews
-            </Text>
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.bookNowWrap}
-          onPress={() => setShowBooking(true)}
-          activeOpacity={0.88}
-        >
-          <LinearGradient
-            colors={THEME.gradient}
-            style={styles.bookNowBtn}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 0 }}
-          >
-            <Ionicons name="calendar-outline" size={17} color="#FFF" />
-            <Text style={styles.bookNowText}>Book Now</Text>
-          </LinearGradient>
-        </TouchableOpacity>
-      </View>
-
-      {/* ══════════ LIGHTBOX MODAL ════════════════════════════════════ */}
-      <Modal visible={lightboxVisible} animationType="fade" transparent statusBarTranslucent>
-        <View style={styles.lightboxOverlay}>
-          <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
-            <View style={styles.lightboxHeader}>
-              <TouchableOpacity onPress={() => setLightboxVisible(false)} style={styles.lightboxClose}>
-                <View style={styles.lightboxCloseBtn}>
-                  <Ionicons name="close" size={22} color="#FFF" />
-                </View>
-              </TouchableOpacity>
-              <View style={styles.lightboxCounterWrap}>
-                <Text style={styles.lightboxCounter}>{lightboxIndex + 1} / {allImages.length}</Text>
-              </View>
-              <View style={{ width: 44 }} />
             </View>
-            <ScrollView
-              horizontal
-              pagingEnabled
-              showsHorizontalScrollIndicator={false}
-              contentOffset={{ x: lightboxIndex * SCREEN_WIDTH, y: 0 }}
-              onMomentumScrollEnd={(e) => {
-                const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
-                setLightboxIndex(idx);
-              }}
-              style={{ flex: 1 }}
+          </View>
+          <SafeAreaView
+            style={[styles.navOverlay, { position: 'absolute', top: 0, left: 0, right: 0, zIndex: 99 }]}
+            edges={['top']}
+          >
+            <TouchableOpacity style={styles.navBtn} onPress={() => router.back()}>
+              <Ionicons name="arrow-back" size={20} color="#FFF" />
+            </TouchableOpacity>
+            <View style={styles.navRight}>
+              <TouchableOpacity style={styles.navBtn} onPress={handleShare}>
+                <Ionicons name="share-outline" size={19} color="#FFF" />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={styles.navBtn}
+                onPress={() => business && toggleFavorite(business as any)}
+              >
+                <Ionicons
+                  name={business && isFavorite(business.id) ? 'heart' : 'heart-outline'}
+                  size={19}
+                  color={business && isFavorite(business.id) ? '#F87171' : '#FFF'}
+                />
+              </TouchableOpacity>
+            </View>
+          </SafeAreaView>
+        </ScrollView>
+
+        {/* ══════════ STICKY BOTTOM BAR ════════════════════════════════ */}
+        <View style={[styles.bottomBar, { backgroundColor: C.card, borderTopColor: C.border }]}>
+          <View style={styles.bottomLeft}>
+            <Text style={[styles.bottomBizName, { color: C.text }]} numberOfLines={1}>
+              {business.name_en}
+            </Text>
+            <View style={styles.bottomRating}>
+              <Ionicons name="star" size={12} color={Colors.accent} />
+              <Text style={[styles.bottomRatingText, { color: C.textSecondary }]}>
+                {business.rating_avg.toFixed(1)} · {business.rating_count} reviews
+              </Text>
+            </View>
+          </View>
+          <TouchableOpacity
+            style={styles.bookNowWrap}
+            onPress={() => setShowBooking(true)}
+            activeOpacity={0.88}
+          >
+            <LinearGradient
+              colors={THEME.gradient}
+              style={styles.bookNowBtn}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
             >
-              {allImages.map((uri, i) => (
-                <View
-                  key={i}
-                  style={{ width: SCREEN_WIDTH, flex: 1, alignItems: 'center', justifyContent: 'center' }}
-                >
-                  <Image source={{ uri }} style={styles.lightboxImage} resizeMode="contain" />
+              <Ionicons name="calendar-outline" size={17} color="#FFF" />
+              <Text style={styles.bookNowText}>Book Now</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        </View>
+
+        {/* ══════════ LIGHTBOX MODAL ════════════════════════════════════ */}
+        <Modal visible={lightboxVisible} animationType="fade" transparent statusBarTranslucent>
+          <View style={styles.lightboxOverlay}>
+            <SafeAreaView style={{ flex: 1 }} edges={['top', 'bottom']}>
+              <View style={styles.lightboxHeader}>
+                <TouchableOpacity onPress={() => setLightboxVisible(false)} style={styles.lightboxClose}>
+                  <View style={styles.lightboxCloseBtn}>
+                    <Ionicons name="close" size={22} color="#FFF" />
+                  </View>
+                </TouchableOpacity>
+                <View style={styles.lightboxCounterWrap}>
+                  <Text style={styles.lightboxCounter}>{lightboxIndex + 1} / {allImages.length}</Text>
                 </View>
-              ))}
-            </ScrollView>
-            {allImages.length > 1 && (
-              <View style={styles.lightboxDots}>
-                {allImages.map((_, i) => (
+                <View style={{ width: 44 }} />
+              </View>
+              <ScrollView
+                horizontal
+                pagingEnabled
+                showsHorizontalScrollIndicator={false}
+                contentOffset={{ x: lightboxIndex * SCREEN_WIDTH, y: 0 }}
+                onMomentumScrollEnd={(e) => {
+                  const idx = Math.round(e.nativeEvent.contentOffset.x / SCREEN_WIDTH);
+                  setLightboxIndex(idx);
+                }}
+                style={{ flex: 1 }}
+              >
+                {allImages.map((uri, i) => (
                   <View
                     key={i}
-                    style={[
-                      styles.lbDot,
-                      i === lightboxIndex && styles.lbDotActive,
-                    ]}
-                  />
-                ))}
-              </View>
-            )}
-          </SafeAreaView>
-        </View>
-      </Modal>
-
-      {/* ══════════ BOOKING MODAL ════════════════════════════════════ */}
-      <Modal visible={showBooking} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalSheet, { backgroundColor: C.card }]}>
-            {/* Pill handle */}
-            <View style={[styles.sheetHandle, { backgroundColor: C.border }]} />
-
-            {/* Modal header */}
-            <View style={styles.modalHeader}>
-              <View style={styles.modalHeaderLeft}>
-                <LinearGradient colors={THEME.gradient} style={styles.modalHeaderIcon}>
-                  <Ionicons name="calendar" size={20} color="#FFF" />
-                </LinearGradient>
-                <View>
-                  <Text style={[styles.modalTitle, { color: C.text }]}>Book Appointment</Text>
-                  <Text style={[styles.modalSub, { color: C.textMuted }]}>{business.name_en}</Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                style={[styles.modalCloseBtn, { backgroundColor: C.divider }]}
-                onPress={() => setShowBooking(false)}
-              >
-                <Ionicons name="close" size={18} color={C.text} />
-              </TouchableOpacity>
-            </View>
-
-            <ScrollView showsVerticalScrollIndicator={false}>
-              {/* Service chips */}
-              {services.length > 0 && (
-                <View style={styles.fieldGroup}>
-                  <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>Select Service</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
+                    style={{ width: SCREEN_WIDTH, flex: 1, alignItems: 'center', justifyContent: 'center' }}
                   >
-                    <TouchableOpacity
+                    <Image source={{ uri }} style={styles.lightboxImage} resizeMode="contain" />
+                  </View>
+                ))}
+              </ScrollView>
+              {allImages.length > 1 && (
+                <View style={styles.lightboxDots}>
+                  {allImages.map((_, i) => (
+                    <View
+                      key={i}
                       style={[
-                        styles.serviceChip,
-                        !selectedService && { backgroundColor: THEME.primary, borderColor: THEME.primary },
+                        styles.lbDot,
+                        i === lightboxIndex && styles.lbDotActive,
                       ]}
-                      onPress={() => setSelectedService(null)}
+                    />
+                  ))}
+                </View>
+              )}
+            </SafeAreaView>
+          </View>
+        </Modal>
+
+        {/* ══════════ BOOKING MODAL ════════════════════════════════════ */}
+        <Modal visible={showBooking} animationType="slide" transparent>
+          <View style={styles.modalOverlay}>
+            <View style={[styles.modalSheet, { backgroundColor: C.card }]}>
+              {/* Pill handle */}
+              <View style={[styles.sheetHandle, { backgroundColor: C.border }]} />
+
+              {/* Modal header */}
+              <View style={styles.modalHeader}>
+                <View style={styles.modalHeaderLeft}>
+                  <LinearGradient colors={THEME.gradient} style={styles.modalHeaderIcon}>
+                    <Ionicons name="calendar" size={20} color="#FFF" />
+                  </LinearGradient>
+                  <View>
+                    <Text style={[styles.modalTitle, { color: C.text }]}>Book Appointment</Text>
+                    <Text style={[styles.modalSub, { color: C.textMuted }]}>{business.name_en}</Text>
+                  </View>
+                </View>
+                <TouchableOpacity
+                  style={[styles.modalCloseBtn, { backgroundColor: C.divider }]}
+                  onPress={() => setShowBooking(false)}
+                >
+                  <Ionicons name="close" size={18} color={C.text} />
+                </TouchableOpacity>
+              </View>
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {/* Service chips */}
+                {services.length > 0 && (
+                  <View style={styles.fieldGroup}>
+                    <Text style={[styles.fieldLabel, { color: C.textSecondary }]}>Select Service</Text>
+                    <ScrollView
+                      horizontal
+                      showsHorizontalScrollIndicator={false}
+                      contentContainerStyle={{ gap: 8, paddingVertical: 4 }}
                     >
-                      <Text style={[styles.serviceChipText, { color: !selectedService ? '#FFF' : C.text }]}>
-                        Any
-                      </Text>
-                    </TouchableOpacity>
-                    {services.map((svc) => (
                       <TouchableOpacity
-                        key={svc.id}
                         style={[
                           styles.serviceChip,
-                          selectedService?.id === svc.id && {
-                            backgroundColor: THEME.primary,
-                            borderColor: THEME.primary,
-                          },
+                          !selectedService && { backgroundColor: THEME.primary, borderColor: THEME.primary },
                         ]}
-                        onPress={() => setSelectedService(svc)}
+                        onPress={() => setSelectedService(null)}
                       >
-                        <Text
-                          style={[
-                            styles.serviceChipText,
-                            { color: selectedService?.id === svc.id ? '#FFF' : C.text },
-                          ]}
-                        >
-                          {svc.name}
-                          {svc.price ? ` · ${svc.price} OMR` : ''}
+                        <Text style={[styles.serviceChipText, { color: !selectedService ? '#FFF' : C.text }]}>
+                          Any
                         </Text>
                       </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-
-              <InputField
-                icon="person-outline"
-                label="Full Name"
-                value={bookingForm.name}
-                onChange={(v) => setBookingForm((p) => ({ ...p, name: v }))}
-              />
-              <InputField
-                icon="mail-outline"
-                label="Email Address"
-                value={bookingForm.email}
-                onChange={(v) => setBookingForm((p) => ({ ...p, email: v }))}
-                keyboardType="email-address"
-              />
-              <InputField
-                icon="call-outline"
-                label="Phone Number"
-                value={bookingForm.phone}
-                onChange={(v) => setBookingForm((p) => ({ ...p, phone: v }))}
-                keyboardType="phone-pad"
-              />
-              {/* <InputField
-                icon="calendar-outline"
-                label="Preferred Date"
-                placeholder="YYYY-MM-DD"
-                value={bookingForm.date}
-                onChange={(v) => setBookingForm((p) => ({ ...p, date: v }))}
-              /> */}
-              <TouchableOpacity onPress={() => setShowDatePicker(true)} activeOpacity={0.8}>
-                <View pointerEvents="none">
+                      {services.map((svc) => (
+                        <TouchableOpacity
+                          key={svc.id}
+                          style={[
+                            styles.serviceChip,
+                            selectedService?.id === svc.id && {
+                              backgroundColor: THEME.primary,
+                              borderColor: THEME.primary,
+                            },
+                          ]}
+                          onPress={() => setSelectedService(svc)}
+                        >
+                          <Text
+                            style={[
+                              styles.serviceChipText,
+                              { color: selectedService?.id === svc.id ? '#FFF' : C.text },
+                            ]}
+                          >
+                            {svc.name}
+                            {svc.price ? ` · ${svc.price} OMR` : ''}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+                <View style={{ marginBottom: 12 }}>
                   <InputField
-                    icon="calendar-outline"
-                    label="Preferred Date"
-                    value={bookingForm.date}
-                    onChange={(v) => setBookingForm((p) => ({ ...p, date: v }))}
-                    placeholder="Select Date"
+                    icon="person-outline"
+                    label="Full Name"
+                    value={bookingForm.name}
+                    onChange={(v) => {
+                      setBookingForm((p) => ({ ...p, name: v }));
+                      setErrors((prev: any) => ({ ...prev, name: '' }));
+                    }}
                   />
+                  {errors.name && <Text style={styles.errorText}>{errors.name}</Text>}
                 </View>
-              </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={bookingForm.date ? new Date(bookingForm.date) : new Date()}
-                  mode="date"
-                  display="default"
-                  onChange={(event, selectedDate) => {
-                    setShowDatePicker(false);
+                <View style={{ marginBottom: 12 }}>
+                  <InputField
+                    icon="mail-outline"
+                    label="Email Address"
+                    value={bookingForm.email}
+                    onChange={(v) => {
+                      setBookingForm((p) => ({ ...p, email: v }));
+                      setErrors((prev: any) => ({ ...prev, email: '' }));
+                    }}
+                    keyboardType="email-address"
+                  />
+                  {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+                </View>
+                <View style={{ marginBottom: 12 }}>
+                  <InputField
+                    icon="call-outline"
+                    label="Phone Number"
+                    value={bookingForm.phone}
+                    onChange={(v) => {
+                      setBookingForm((p) => ({ ...p, phone: v }));
+                      setErrors((prev: any) => ({ ...prev, phone: '' }));
+                    }}
+                    keyboardType="phone-pad"
+                  />
+                  {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
+                </View>
+                <View style={{ marginBottom: 12 }}>
+                  <TouchableOpacity onPress={() => setShowDatePicker(true)} activeOpacity={0.8}>
+                    <View pointerEvents="none">
+                      <InputField
+                        icon="calendar-outline"
+                        label="Preferred Date"
+                        value={bookingForm.date}
+                        onChange={(v) => setBookingForm((p) => ({ ...p, date: v }))}
+                        placeholder="Select Date"
+                      />
+                    </View>
+                  </TouchableOpacity>
+                  {errors.date && (
+                    <Text style={styles.errorText}>{errors.date}</Text>
+                  )}
+                </View>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={bookingForm.date ? new Date(bookingForm.date) : new Date()}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowDatePicker(false);
 
-                    if (selectedDate) {
-                      const formatted = selectedDate.toISOString().split('T')[0];
-                      setBookingForm((prev) => ({
-                        ...prev,
-                        date: formatted,
-                      }));
-                    }
-                  }}
-                />
-              )}
-              <InputField
-                icon="time-outline"
-                label="Preferred Time"
-                placeholder="e.g. 10:00 AM"
-                value={bookingForm.time}
-                onChange={(v) => setBookingForm((p) => ({ ...p, time: v }))}
-              />
+                      if (selectedDate) {
+                        const formatted = selectedDate.toISOString().split('T')[0];
+                        setBookingForm((prev) => ({
+                          ...prev,
+                          date: formatted,
+                        }));
+                        setErrors((prev: any) => ({ ...prev, date: '' }));
+                      }
+                    }}
+                  />
+                )}
+                <View style={{ marginBottom: 12 }}>
+                  <InputField
+                    icon="time-outline"
+                    label="Preferred Time"
+                    placeholder="e.g. 10:00 AM"
+                    value={bookingForm.time}
+                    onChange={(v) => {
+                      setBookingForm((p) => ({ ...p, time: v }));
+                      setErrors((prev: any) => ({ ...prev, time: '' }));
+                    }}
+                  />
+                  {errors.time && <Text style={styles.errorText}>{errors.time}</Text>}
+                </View>
 
-              <TouchableOpacity
-                style={[styles.submitBtn, { marginTop: 8 }]}
-                onPress={handleBooking}
-              >
-                <LinearGradient
-                  colors={THEME.gradient}
-                  style={styles.submitBtnGradient}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
+                <TouchableOpacity
+                  style={[styles.submitBtn, { marginTop: 8 }]}
+                  onPress={handleBooking}
                 >
-                  {bookingMutation.isPending ? (
-                    <ActivityIndicator color="#FFF" size="small" />
-                  ) : (
-                    <>
-                      <Ionicons name="calendar-outline" size={18} color="#FFF" />
-                      <Text style={styles.submitBtnText}>Confirm Booking</Text>
-                    </>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
+                  <LinearGradient
+                    colors={THEME.gradient}
+                    style={styles.submitBtnGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    {bookingMutation.isPending ? (
+                      <ActivityIndicator color="#FFF" size="small" />
+                    ) : (
+                      <>
+                        <Ionicons name="calendar-outline" size={18} color="#FFF" />
+                        <Text style={styles.submitBtnText}>Confirm Booking</Text>
+                      </>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
 
-              {/* Direct contact shortcuts */}
-              {(business.whatsapp || business.phone) && (
-                <View style={styles.modalContactRow}>
-                  <Text style={[styles.orText, { color: C.textMuted }]}>or reach directly</Text>
-                  {business.whatsapp && (
-                    <TouchableOpacity
-                      style={styles.contactBtnWa}
-                      onPress={handleWhatsApp}
-                    >
-                      <Ionicons name="logo-whatsapp" size={17} color="#FFF" />
-                      <Text style={styles.contactBtnText}>Chat on WhatsApp</Text>
-                    </TouchableOpacity>
-                  )}
-                  {business.phone && (
-                    <TouchableOpacity
-                      style={[styles.contactBtnCall, { backgroundColor: THEME.primary }]}
-                      onPress={handleCall}
-                    >
-                      <Ionicons name="call" size={17} color="#FFF" />
-                      <Text style={styles.contactBtnText}>Call {business.phone}</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              )}
-              <View style={{ height: 32 }} />
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-    </View>
+                {/* Direct contact shortcuts */}
+                {(business.whatsapp || business.phone) && (
+                  <View style={styles.modalContactRow}>
+                    <Text style={[styles.orText, { color: C.textMuted }]}>or reach directly</Text>
+                    {business.whatsapp && (
+                      <TouchableOpacity
+                        style={styles.contactBtnWa}
+                        onPress={handleWhatsApp}
+                      >
+                        <Ionicons name="logo-whatsapp" size={17} color="#FFF" />
+                        <Text style={styles.contactBtnText}>Chat on WhatsApp</Text>
+                      </TouchableOpacity>
+                    )}
+                    {business.phone && (
+                      <TouchableOpacity
+                        style={[styles.contactBtnCall, { backgroundColor: THEME.primary }]}
+                        onPress={handleCall}
+                      >
+                        <Ionicons name="call" size={17} color="#FFF" />
+                        <Text style={styles.contactBtnText}>Call {business.phone}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                )}
+                <View style={{ height: 32 }} />
+              </ScrollView>
+            </View>
+          </View >
+        </Modal >
+      </View >
+      <Toast />
+    </>
   );
 }
 
@@ -1719,7 +1807,7 @@ const styles = StyleSheet.create({
   },
 
   // ── Form inputs ───────────────────────────────────────────
-  fieldGroup: { marginBottom: 14 },
+  fieldGroup: { marginBottom: 6 },
   fieldLabel: { fontSize: 13, fontWeight: '600', marginBottom: 7, letterSpacing: 0.1 },
   inputWrap: {
     flexDirection: 'row', alignItems: 'center', gap: 8,
@@ -1792,4 +1880,12 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   viewAllText: { color: '#FFF', fontSize: 12, fontWeight: '600' },
+  errorText: {
+    color: '#EF4444',
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 4,
+    marginBottom: 4,
+    fontWeight: '500',
+  },
 });
